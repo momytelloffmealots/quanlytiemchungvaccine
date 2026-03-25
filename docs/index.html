@@ -3,11 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=/login.html">
-  <title>Redirecting...</title>
+  <title>Vaccination</title>
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem("session");
+        if (raw) {
+          var s = JSON.parse(raw);
+          if (s && s.success) {
+            window.location.replace("dashboard.html");
+            return;
+          }
+        }
+      } catch (e) {}
+      window.location.replace("login.html");
+    })();
+  </script>
 </head>
 <body>
-  Redirecting to <a href="/login.html">login</a>...
+  <p style="color:#9bb0d0;font-family:system-ui,sans-serif;padding:24px;background:#0b1220;margin:0;">Đang chuyển trang…</p>
 </body>
 </html>
 

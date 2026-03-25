@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Đăng nhập - Hệ thống tiêm chủng</title>
-  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <div class="container">
@@ -14,9 +14,9 @@
         <span class="badge">Demo GitHub Pages</span>
       </div>
       <h2 style="margin:0 0 8px;">Đăng nhập</h2>
-      <div class="hint" style="margin-bottom:14px;">Dùng để truy cập các trang theo vai trò.</div>
+      <div class="hint" style="margin-bottom:14px;">Trên <b>github.io</b>: nhập user/password bất kỳ rồi Đăng nhập sẽ vào màn hình chính (xem giao diện, dữ liệu API không chạy). Máy local + Spring Boot: dùng tài khoản MySQL như bình thường.</div>
 
-      <div id="msg" class="msg" style="display:none;"></div>
+      <div id="msg" class="msg" style="display:none;margin-bottom:12px;"></div>
 
       <form id="loginForm">
         <div class="field">
@@ -28,14 +28,14 @@
           <input id="password" name="password" type="password" placeholder="Mật khẩu" required />
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
-          <button class="btn primary" type="submit">Đăng nhập</button>
+          <button class="btn primary" type="submit" id="loginBtn">Đăng nhập</button>
           <span class="hint">API: đổi trong `assets/js/api.js` nếu cần.</span>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/assets/js/api.js"></script>
+  <script src="assets/js/api.js"></script>
   <script>
     const form = document.getElementById("loginForm");
     const msg = document.getElementById("msg");
@@ -48,8 +48,19 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const loginBtn = document.getElementById("loginBtn");
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Đang xử lý…";
+      msg.style.display = "none";
+
+      if (typeof isGithubPagesStaticDemo === "function" && isGithubPagesStaticDemo()) {
+        setSession(buildDemoSession(username));
+        window.location.href = "dashboard.html";
+        return;
+      }
 
       try{
         const payload = await apiRequest("/api/auth/login", {
@@ -62,9 +73,13 @@
         }
 
         localStorage.setItem("session", JSON.stringify(payload));
-        window.location.href = "/dashboard.html";
+        window.location.href = "dashboard.html";
       }catch(err){
-        showMsg(err.message || "Lỗi đăng nhập", true);
+        const text = (err && err.message) ? String(err.message) : String(err || "Lỗi đăng nhập");
+        showMsg(text, true);
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Đăng nhập";
       }
     });
   </script>

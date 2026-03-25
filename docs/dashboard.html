@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard - Vaccination System</title>
-  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <div class="container">
@@ -27,12 +27,12 @@
           <div id="accountIdLabel" class="badge" style="margin-top:4px;"></div>
         </div>
         <div class="nav">
-          <a id="nav-vaccine" href="/vaccines.html">Quản lý vaccine</a>
-          <a id="nav-forms" href="/vaccination-forms.html">Tạo phiếu tiêm</a>
-          <a id="nav-payment" href="/payment.html">Thanh toán</a>
-          <a id="nav-statistics" href="/statistics.html">Thống kê</a>
-          <a id="nav-history" href="/history.html">Lịch sử tiêm</a>
-          <a id="nav-account" href="/account.html">Quản lý tài khoản</a>
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
         </div>
         <div style="margin-top:14px;" class="hint">
           Menu sẽ tự ẩn/hiện theo role.
@@ -40,6 +40,9 @@
       </aside>
 
       <main class="content">
+        <div id="demoBanner" class="msg error" style="display:none;margin-bottom:12px;">
+          Chế độ demo trên GitHub Pages: menu xem được, các trang cần API sẽ báo lỗi cho đến khi bạn deploy backend HTTPS và sửa <code>API_BASE_URL</code> trong <code>assets/js/api.js</code>.
+        </div>
         <div class="card">
           <h2 style="margin:0 0 8px;">Chào mừng</h2>
           <div id="welcome" class="hint" style="font-size:14px;line-height:1.6;">
@@ -60,16 +63,20 @@
     </div>
   </div>
 
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/app.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
   <script>
     const session = requireLogin();
     if (session) {
+      if (session.demo) {
+        document.getElementById("demoBanner").style.display = "block";
+      }
       document.getElementById("userLabel").textContent = session.username || "User";
       document.getElementById("roleLabel").textContent = session.authority || "-";
       document.getElementById("accountIdLabel").textContent = session.accountId ? `Account: ${session.accountId}` : "";
-      document.getElementById("welcome").innerHTML =
-        `Bạn có thể bắt đầu từ menu bên trái. Nếu bạn thấy chức năng cần thiết bị ẩn, kiểm tra dữ liệu role trong bảng MySQL.`;
+      document.getElementById("welcome").innerHTML = session.demo
+        ? `Đang xem giao diện demo. Để dữ liệu thật: chạy Spring Boot, mở site qua <b>http://localhost</b> hoặc đặt API công khai.`
+        : `Bạn có thể bắt đầu từ menu bên trái. Nếu bạn thấy chức năng cần thiết bị ẩn, kiểm tra dữ liệu role trong bảng MySQL.`;
       initPage();
     }
   </script>
