@@ -1,38 +1,41 @@
 :root {
-  --bg: #0f172a;
-  --bg-elevated: #1e293b;
-  --panel: rgba(30, 41, 59, 0.72);
-  --border: rgba(148, 163, 184, 0.14);
-  --border-strong: rgba(148, 163, 184, 0.22);
-  --muted: #94a3b8;
-  --text: #f1f5f9;
-  --text-soft: #cbd5e1;
-  /* Teal dịu — thường dùng cho phầm mềm y tế */
-  --accent: #2dd4bf;
-  --accent-dim: rgba(45, 212, 191, 0.14);
-  --accent-hover: #5eead4;
-  --link: #7dd3fc;
-  --danger: #fb7185;
-  --danger-bg: rgba(251, 113, 133, 0.1);
-  --notice-bg: rgba(45, 212, 191, 0.1);
-  --notice-border: rgba(45, 212, 191, 0.35);
-  --notice-text: #99f6e4;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  /* Nền phẳng — không gradient để tránh vệt ngang / cắt màu */
+  --bg: #1a1d27;
+  --bg-elevated: #252a36;
+  --panel: #2a303c;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --muted: #9ca3af;
+  --text: #f3f4f6;
+  --text-soft: #d1d5db;
+  --accent: #818cf8;
+  --accent-dim: rgba(129, 140, 248, 0.18);
+  --accent-hover: #a5b4fc;
+  --link: #93c5fd;
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.12);
+  --notice-bg: rgba(129, 140, 248, 0.12);
+  --notice-border: rgba(129, 140, 248, 0.35);
+  --notice-text: #e0e7ff;
+  --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background-color: var(--bg);
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100dvh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   background-color: var(--bg);
-  background-image:
-    radial-gradient(1000px 520px at 12% -10%, rgba(45, 212, 191, 0.08), transparent 55%),
-    radial-gradient(800px 420px at 88% 0%, rgba(125, 211, 252, 0.06), transparent 50%),
-    linear-gradient(180deg, #0f172a 0%, #0b1222 100%);
   color: var(--text);
   line-height: 1.5;
 }
@@ -57,6 +60,10 @@ textarea {
   max-width: 1120px;
   margin: 0 auto;
   padding: 20px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .card {
@@ -65,7 +72,6 @@ textarea {
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(8px);
 }
 
 .topbar {
@@ -76,6 +82,45 @@ textarea {
   padding: 8px 4px 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.role-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
+  background: var(--accent-dim);
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-user {
+  color: var(--text-soft);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 6px 4px;
+  border-radius: 6px;
+  text-decoration: none !important;
+}
+
+.header-user:hover {
+  color: var(--accent-hover);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .brand {
@@ -101,16 +146,20 @@ textarea {
 .layout {
   display: flex;
   gap: 0;
-  align-items: flex-start;
-  min-height: 60vh;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 
 .sidebar {
   width: 248px;
   flex-shrink: 0;
-  padding: 20px 20px 20px 0;
+  padding: 20px 20px 28px 0;
   border-right: 1px solid var(--border);
   margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
 }
 
 .sidebar .user {
@@ -152,21 +201,21 @@ textarea {
 }
 
 .nav a:hover {
-  background: rgba(148, 163, 184, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text);
   border-color: var(--border);
 }
 
 .nav a.active {
   background: var(--accent-dim);
-  border-color: rgba(45, 212, 191, 0.35);
+  border-color: rgba(129, 140, 248, 0.4);
   color: var(--accent-hover);
   font-weight: 600;
 }
 
 .content {
   flex: 1;
-  padding: 20px 0;
+  padding: 20px 0 32px;
   min-width: 0;
 }
 
@@ -226,32 +275,32 @@ textarea:focus {
 }
 
 .btn:hover {
-  background: rgba(148, 163, 184, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   border-color: var(--muted);
 }
 
 .btn.primary {
-  border-color: rgba(45, 212, 191, 0.45);
+  border-color: rgba(129, 140, 248, 0.45);
   background: var(--accent-dim);
   color: var(--accent-hover);
   font-weight: 600;
 }
 
 .btn.primary:hover {
-  background: rgba(45, 212, 191, 0.22);
+  background: rgba(129, 140, 248, 0.28);
   border-color: var(--accent);
-  color: #ecfdf5;
+  color: #eef2ff;
 }
 
 .btn.danger {
-  border-color: rgba(251, 113, 133, 0.45);
+  border-color: rgba(248, 113, 113, 0.45);
   background: var(--danger-bg);
-  color: #fecdd3;
+  color: #fecaca;
 }
 
 .btn.danger:hover {
-  background: rgba(251, 113, 133, 0.18);
+  background: rgba(248, 113, 113, 0.2);
 }
 
 .hint {
@@ -299,18 +348,17 @@ th {
   font-size: 0.8125rem;
   padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--bg);
   border: 1px solid var(--border);
   color: var(--link);
 }
 
 .msg.error {
-  border-color: rgba(251, 113, 133, 0.4);
-  color: #fecdd3;
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
   background: var(--danger-bg);
 }
 
-/* Thông báo info / demo — không dùng màu lỗi */
 .msg.notice {
   border-color: var(--notice-border);
   background: var(--notice-bg);
@@ -319,5 +367,5 @@ th {
 
 .msg.notice code {
   color: var(--accent-hover);
-  border-color: rgba(45, 212, 191, 0.3);
+  border-color: rgba(129, 140, 248, 0.3);
 }

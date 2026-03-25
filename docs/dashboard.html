@@ -13,19 +13,15 @@
         <span class="brand-accent">Vaccination</span>
         <span class="badge">Quản lý tiêm chủng</span>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <div id="userLabel" class="badge">Chưa đăng nhập</div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">Tài khoản</a>
         <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
       </div>
     </div>
 
     <div class="layout">
       <aside class="sidebar">
-        <div class="user">
-          <div style="font-weight:700;">Vai trò</div>
-          <div id="roleLabel" class="badge">-</div>
-          <div id="accountIdLabel" class="badge" style="margin-top:4px;"></div>
-        </div>
         <div class="nav">
           <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
           <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
@@ -71,9 +67,6 @@
       if (session.demo) {
         document.getElementById("demoBanner").style.display = "block";
       }
-      document.getElementById("userLabel").textContent = session.username || "User";
-      document.getElementById("roleLabel").textContent = session.authority || "-";
-      document.getElementById("accountIdLabel").textContent = session.accountId ? `Account: ${session.accountId}` : "";
       document.getElementById("welcome").innerHTML = session.demo
         ? `Đang xem giao diện demo. Để dữ liệu thật: chạy Spring Boot, mở site qua <b>http://localhost</b> hoặc đặt API công khai.`
         : `Bạn có thể bắt đầu từ menu bên trái. Nếu bạn thấy chức năng cần thiết bị ẩn, kiểm tra dữ liệu role trong bảng MySQL.`;

@@ -42,9 +42,24 @@ function renderSidebar(session) {
   }
 }
 
+function bindHeaderSession(session) {
+  if (!session) return;
+  const roleEl = document.getElementById("headerRole");
+  const userLink = document.getElementById("headerUserLink");
+  if (roleEl) {
+    roleEl.textContent = session.authority || "—";
+    roleEl.title = "Vai trò: " + (session.authority || "—");
+  }
+  if (userLink) {
+    userLink.textContent = session.username || "Hồ sơ";
+    userLink.href = "profile.html";
+  }
+}
+
 function initPage() {
   const session = requireLogin();
   if (!session) return;
+  bindHeaderSession(session);
   renderSidebar(session);
 }
 
