@@ -1,4 +1,24 @@
-const API_BASE_URL = "http://localhost:8080";
+/**
+ * Chạy "như web thật" cùng Spring Boot: để null — trình duyệt gọi /api... trên cùng host (sau mvn spring-boot:run mở http://localhost:8080/login.html).
+ * GitHub Pages + API riêng: đặt URL đầy đủ HTTPS, ví dụ "https://ten-service.railway.app"
+ * Giao diện mở bằng Live Server (cổng 5500) mà API ở 8080: đặt "http://localhost:8080"
+ */
+const API_BASE_URL_OVERRIDE = null;
+
+const API_BASE_URL = (() => {
+  if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
+    return String(API_BASE_URL_OVERRIDE).replace(/\/$/, "");
+  }
+  try {
+    const host = typeof location !== "undefined" ? location.hostname : "";
+    if (host.endsWith("github.io")) {
+      return "http://localhost:8080";
+    }
+    return "";
+  } catch {
+    return "";
+  }
+})();
 
 function apiConnectionHint() {
   try {
