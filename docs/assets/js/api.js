@@ -1,5 +1,20 @@
 const API_BASE_URL = "http://localhost:8080";
 
+function apiConnectionHint() {
+  try {
+    const host = typeof location !== "undefined" ? location.hostname : "";
+    const onGhPages = host.endsWith("github.io");
+    const localApi =
+      API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1");
+    if (onGhPages && localApi) {
+      return " Bạn đang xem site trên GitHub Pages (HTTPS); trình duyệt không cho gọi http://localhost:8080. Hãy đổi API_BASE_URL trong assets/js/api.js sang URL backend của bạn (HTTPS, công khai) hoặc chạy giao diện trên máy local cùng lúc với Spring Boot.";
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  return "";
+}
+
 async function apiRequest(path, { method = "GET", body } = {}) {
   const url = `${API_BASE_URL}${path}`;
   const headers = {};
@@ -7,11 +22,17 @@ async function apiRequest(path, { method = "GET", body } = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    const base = (e && e.message) || "Không thể kết nối tới API.";
+    throw new Error(base + apiConnectionHint());
+  }
 
   // Try parse JSON error payloads from GlobalExceptionHandler
   let payload = null;
