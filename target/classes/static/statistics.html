@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thống kê</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Thống kê</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Thống kê (placeholder)</h2>
+          <div class="hint" style="line-height:1.7;">
+            Sơ đồ mẫu có các mục: “Thống kê doanh thu theo ngày”, “Vaccine sắp hết hạn”, “Vaccine được dùng nhiều…”.
+            Hiện backend của bạn mới có endpoints vaccine sắp hết hạn và danh sách phiếu/bill, nên trang này đang là khung giao diện.
+          </div>
+          <div style="margin-top:12px;">
+            <div class="msg">Bạn có thể nói mình muốn thống kê theo những chỉ số nào trong bài, mình sẽ bổ sung endpoint + UI tương ứng.</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo phiếu tiêm</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Tạo phiếu tiêm</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Danh sách phiếu tiêm</h2>
+          <div style="overflow:auto;max-height:320px;">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Khách hàng</th>
+                <th>Giới tính</th>
+                <th>Ngày sinh</th>
+                <th>Bác sĩ</th>
+                <th>Thu ngân</th>
+                <th>Ngày tiêm</th>
+                <th>Chi tiết</th>
+                <th>Bill?</th>
+              </tr>
+              </thead>
+              <tbody id="formsBody"></tbody>
+            </table>
+          </div>
+          <div class="hint" style="margin-top:10px;">Tạo phiếu mới ở phần bên dưới.</div>
+        </div>
+
+        <div style="height:14px;"></div>
+
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Tạo phiếu tiêm</h2>
+
+          <div class="row">
+            <div class="field" style="min-width:240px;flex:1;">
+              <label for="vaccFormId">Mã phiếu tiêm (optional)</label>
+              <input id="vaccFormId" placeholder="PT001 (để trống nếu backend tự sinh)" />
+            </div>
+            <div class="field" style="min-width:240px;flex:1;">
+              <label for="vaccDate">Ngày tiêm</label>
+              <input id="vaccDate" type="date" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="customerId">Mã khách hàng</label>
+              <input id="customerId" placeholder="VD: KH0001" />
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="doctorId">Mã bác sĩ</label>
+              <input id="doctorId" placeholder="VD: BS0001" />
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="cashierId">Mã thu ngân</label>
+              <input id="cashierId" placeholder="VD: TN0001" />
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div class="hint" style="margin-bottom:10px;">
+              Thêm detail vaccine (tối thiểu 1 dòng). Các field:
+              `vaccineId, cnt, dose, retentionDate, price`.
+            </div>
+
+            <div id="detailsBox" class="card" style="padding:12px;background:rgba(255,255,255,0.02);border-radius:12px;">
+              <button class="btn" type="button" onclick="addDetail()">+ Thêm vaccine</button>
+              <div id="detailsList" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn primary" type="button" onclick="submitForm()">Tạo phiếu tiêm</button>
+            <button class="btn" type="button" onclick="loadForms()">Làm mới danh sách</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+    addDetail();
+
+    function showMsg(text, isError=false){
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      msg.textContent = text;
+      msg.className = "msg" + (isError ? " error" : "");
+    }
+
+    function addDetail(){
+      const idx = document.querySelectorAll(".detailRow").length;
+      const el = document.createElement("div");
+      el.className = "detailRow";
+      el.style.marginTop = "10px";
+      el.innerHTML = `
+        <div class="row" style="margin-top:8px;">
+          <div class="field" style="min-width:180px;flex:1;">
+            <label>vaccineId</label>
+            <input id="d_vaccineId_${idx}" placeholder="VD: VC0001"/>
+          </div>
+          <div class="field" style="min-width:130px;">
+            <label>cnt</label>
+            <input id="d_cnt_${idx}" type="number" min="1" value="1"/>
+          </div>
+          <div class="field" style="min-width:130px;">
+            <label>dose</label>
+            <input id="d_dose_${idx}" type="number" min="1" value="1"/>
+          </div>
+          <div class="field" style="min-width:180px;">
+            <label>retentionDate</label>
+            <input id="d_retention_${idx}" type="date"/>
+          </div>
+          <div class="field" style="min-width:160px;">
+            <label>price</label>
+            <input id="d_price_${idx}" type="number" step="0.01" min="0" value="0"/>
+          </div>
+          <div style="align-self:flex-end;">
+            <button class="btn danger" type="button" onclick="removeDetail(this)">Xóa</button>
+          </div>
+        </div>
+      `;
+      document.getElementById("detailsList").appendChild(el);
+    }
+
+    function removeDetail(btn){
+      const row = btn.closest(".detailRow");
+      row.remove();
+    }
+
+    async function loadForms(){
+      try{
+        const payload = await apiRequest("/api/vaccination-forms");
+        const body = document.getElementById("formsBody");
+        body.innerHTML = "";
+        for (const f of payload){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${f.vaccinationFormId}</td>
+            <td>${f.customerName ?? ""}</td>
+            <td>${f.gender ?? ""}</td>
+            <td>${f.customerBirthDate ?? ""}</td>
+            <td>${f.doctorName ?? ""}</td>
+            <td>${f.cashierName ?? ""}</td>
+            <td>${f.vaccinationDate ?? ""}</td>
+            <td><button class="btn" type="button" onclick="openDetails('${f.vaccinationFormId}')">Xem</button></td>
+            <td><button class="btn" type="button" onclick="checkBill('${f.vaccinationFormId}')">Check</button></td>
+          `;
+          body.appendChild(tr);
+        }
+        showMsg("Tải danh sách phiếu tiêm thành công.");
+      }catch(err){
+        showMsg(err.message, true);
+      }
+    }
+
+    async function checkBill(id){
+      try{
+        const payload = await apiRequest(`/api/vaccination-forms/${id}/payment-status`);
+        alert(payload ? "Đã có bill cho phiếu này." : "Chưa có bill cho phiếu này.");
+      }catch(err){
+        alert(err.message);
+      }
+    }
+
+    function formatCustomerName(cn) {
+      if (cn == null) return "";
+      if (typeof cn === "string") return cn;
+      if (typeof cn === "object") {
+        if ("value" in cn && cn.value != null) return String(cn.value);
+        if (Array.isArray(cn)) return cn.filter((x) => typeof x === "string").join(", ");
+      }
+      return String(cn);
+    }
+
+    async function openDetails(id){
+      try{
+        const vaccines = await apiRequest(`/api/vaccination-forms/${id}/vaccines`);
+        const customerName = await apiRequest(`/api/vaccination-forms/${id}/customer-name`).catch(()=>null);
+        const lines = vaccines.map(v => `${v.vaccineName} (cnt=${v.cnt}, dose=${v.dose}, retention=${v.retentionDate}, price=${v.price})`).join("\n");
+        const cust = formatCustomerName(customerName);
+        alert(`Form: ${id}\nCustomer: ${cust || "(không có)"}\n${lines}`);
+      }catch(err){
+        alert(err.message);
+      }
+    }
+
+    function getDetailsPayload(){
+      const details = [];
+      const inputs = document.querySelectorAll("#detailsList input");
+      const byIdx = {};
+      for (const input of inputs){
+        const m = input.id.match(/d_(.+)_(\d+)/);
+        if (!m) continue;
+        const field = m[1];
+        const idx = m[2];
+        byIdx[idx] = byIdx[idx] || {};
+        if (field === "vaccineId") byIdx[idx].vaccineId = input.value.trim();
+        if (field === "cnt") byIdx[idx].cnt = parseInt(input.value || "1",10);
+        if (field === "dose") byIdx[idx].dose = parseInt(input.value || "1",10);
+        if (field === "retention") byIdx[idx].retentionDate = input.value;
+        if (field === "price") byIdx[idx].price = parseFloat(input.value || "0");
+      }
+      const idxs = Object.keys(byIdx).sort((a,b)=>parseInt(a)-parseInt(b));
+      for (const idx of idxs){
+        const it = byIdx[idx];
+        if (!it.vaccineId) continue;
+        details.push({
+          vaccineId: it.vaccineId,
+          cnt: it.cnt || 1,
+          dose: it.dose || 1,
+          retentionDate: it.retentionDate,
+          price: it.price ?? 0
+        });
+      }
+      return details;
+    }
+
+    async function submitForm(){
+      try{
+        const vaccinationFormId = (document.getElementById("vaccFormId").value || "").trim() || null;
+        const vaccinationDate = document.getElementById("vaccDate").value;
+        const customerId = document.getElementById("customerId").value.trim();
+        const doctorId = document.getElementById("doctorId").value.trim();
+        const cashierId = document.getElementById("cashierId").value.trim();
+        const details = getDetailsPayload();
+
+        if (!vaccinationDate) return showMsg("Vui lòng chọn ngày tiêm.", true);
+        if (!customerId || !doctorId || !cashierId) return showMsg("Thiếu thông tin mã khách/bác sĩ/thu ngân.", true);
+        if (!details.length) return showMsg("Cần ít nhất 1 dòng vaccine detail.", true);
+
+        const payload = {
+          vaccinationFormId,
+          vaccinationDate,
+          customerId,
+          doctorId,
+          cashierId,
+          details
+        };
+
+        const res = await apiRequest("/api/vaccination-forms", { method:"POST", body: payload });
+        showMsg(`Tạo phiếu thành công. formId=${res}`, false);
+        await loadForms();
+      }catch(err){
+        showMsg(err.message, true);
+      }
+    }
+
+    // initial load
+    loadForms();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý tài khoản</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Quản lý tài khoản</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Quản lý tài khoản (placeholder)</h2>
+          <div class="hint" style="line-height:1.7;">
+            Sơ đồ mẫu có các thao tác: Xem / Thêm / Sửa / Xóa tài khoản.
+            Backend hiện tại chưa có endpoint CRUD tài khoản, nên trang này chủ yếu là giao diện khung.
+          </div>
+          <div id="note" class="msg" style="margin-top:12px;">
+            Nếu bạn muốn, mình sẽ thêm các endpoint:
+            <code>/api/accounts</code> (GET/POST) và <code>/api/accounts/{id}</code> (PUT/DELETE),
+            đồng thời tạo UI form tương ứng.
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+  </script>
+</body>
+</html>
+

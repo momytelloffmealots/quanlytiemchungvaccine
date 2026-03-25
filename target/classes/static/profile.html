@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hồ sơ — Vaccination</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Hồ sơ cá nhân</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 16px;">Thông tin tài khoản</h2>
+          <div class="hint" style="margin-bottom:16px;line-height:1.7;">
+            Đây là dữ liệu phiên đăng nhập lưu trong trình duyệt. Đổi mật khẩu hay sửa hồ sơ thật cần thực hiện qua backend / quản trị viên khi có API tương ứng.
+          </div>
+          <table>
+            <tbody>
+              <tr><th scope="row">Tên đăng nhập</th><td id="pfUsername">—</td></tr>
+              <tr><th scope="row">Mã tài khoản</th><td id="pfAccountId">—</td></tr>
+              <tr><th scope="row">Vai trò</th><td id="pfAuthority">—</td></tr>
+              <tr><th scope="row">Email</th><td id="pfEmail">—</td></tr>
+              <tr><th scope="row">Ghi chú</th><td id="pfExtra">—</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:20px;">
+            <a class="btn primary" href="dashboard.html">Về trang chính</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+    (function () {
+      const session = getSession();
+      if (!session?.success) return;
+      document.getElementById("pfUsername").textContent = session.username || "—";
+      document.getElementById("pfAccountId").textContent = session.accountId || "—";
+      document.getElementById("pfAuthority").textContent = session.authority || "—";
+      document.getElementById("pfEmail").textContent = session.email || "—";
+      if (session.demo) {
+        document.getElementById("pfExtra").textContent = "Đang dùng chế độ demo (GitHub Pages).";
+      } else {
+        const parts = [];
+        if (session.doctorId) parts.push("Bác sĩ: " + session.doctorId);
+        if (session.cashierId) parts.push("Thu ngân: " + session.cashierId);
+        if (session.inventoryManagerId) parts.push("QL kho: " + session.inventoryManagerId);
+        if (session.administratorId) parts.push("QT: " + session.administratorId);
+        document.getElementById("pfExtra").textContent = parts.length ? parts.join(" · ") : "—";
+      }
+    })();
+  </script>
+</body>
+</html>

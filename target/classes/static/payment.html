@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thanh toán</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Thanh toán hóa đơn</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+        <div style="margin-top:14px;" class="hint">Tạo bill từ phiếu tiêm.</div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Danh sách hóa đơn</h2>
+          <div style="overflow:auto;max-height:320px;">
+            <table>
+              <thead>
+              <tr>
+                <th>Bill ID</th>
+                <th>Form ID</th>
+                <th>Khách hàng</th>
+                <th>Thu ngân</th>
+                <th>Chiết khấu</th>
+                <th>Due date</th>
+                <th>Tổng tiền</th>
+              </tr>
+              </thead>
+              <tbody id="billsBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn primary" type="button" onclick="loadBills()">Tải lại</button>
+          </div>
+        </div>
+
+        <div style="height:14px;"></div>
+
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Tạo hóa đơn</h2>
+
+          <div class="row">
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="billId">Mã bill (optional)</label>
+              <input id="billId" placeholder="HD001 (để trống nếu backend tự sinh)"/>
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="formId">Vaccination form ID</label>
+              <input id="formId" placeholder="PT001"/>
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="cashierId">Cashier ID</label>
+              <input id="billCashierId" placeholder="TN001"/>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="discount">Discount (0..)</label>
+              <input id="discount" type="number" step="0.01" min="0" value="0"/>
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="dueDate">Due date</label>
+              <input id="dueDate" type="date"/>
+            </div>
+            <div class="field" style="min-width:220px;flex:1;">
+              <label for="totalAmount">Total amount (optional)</label>
+              <input id="totalAmount" type="number" step="0.01" min="0" placeholder="để trống nếu auto"/>
+              <div class="hint">Nếu trống, server sẽ tính placeholder từ `CNT * PRICE`.</div>
+            </div>
+          </div>
+
+          <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn primary" type="button" onclick="createBill()">Tạo bill</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+
+    function showMsg(text, isError=false){
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      msg.textContent = text;
+      msg.className = "msg" + (isError ? " error" : "");
+    }
+
+    async function loadBills(){
+      try{
+        const payload = await apiRequest("/api/bills");
+        const body = document.getElementById("billsBody");
+        body.innerHTML = "";
+        for (const b of payload){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${b.billId}</td>
+            <td>${b.vaccinationFormId ?? ""}</td>
+            <td>${b.customerName ?? ""}</td>
+            <td>${b.cashierName ?? ""}</td>
+            <td>${b.discount ?? ""}</td>
+            <td>${b.dueDate ?? ""}</td>
+            <td>${b.totalAmount ?? ""}</td>
+          `;
+          body.appendChild(tr);
+        }
+      }catch(err){
+        showMsg(err.message, true);
+      }
+    }
+
+    async function createBill(){
+      try{
+        const vaccinationFormId = document.getElementById("formId").value.trim();
+        const cashierId = document.getElementById("billCashierId").value.trim();
+        const discount = parseFloat(document.getElementById("discount").value || "0");
+        const dueDate = document.getElementById("dueDate").value;
+        const billId = document.getElementById("billId").value.trim() || null;
+        const totalStr = document.getElementById("totalAmount").value.trim();
+        const totalAmount = totalStr ? parseFloat(totalStr) : null;
+
+        if(!vaccinationFormId) return showMsg("Thiếu vaccinationFormId.", true);
+        if(!cashierId) return showMsg("Thiếu cashierId.", true);
+        if(!dueDate) return showMsg("Chọn dueDate.", true);
+
+        const payload = {
+          billId,
+          vaccinationFormId,
+          cashierId,
+          discount,
+          dueDate,
+          totalAmount
+        };
+
+        const resId = await apiRequest("/api/bills", { method:"POST", body: payload });
+        showMsg(`Tạo bill thành công: ${resId}`);
+        await loadBills();
+      }catch(err){
+        showMsg(err.message, true);
+      }
+    }
+
+    loadBills();
+  </script>
+</body>
+</html>
+
