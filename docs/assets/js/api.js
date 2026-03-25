@@ -3,7 +3,8 @@
  * GitHub Pages + API riêng: đặt URL đầy đủ HTTPS, ví dụ "https://ten-service.railway.app"
  * Giao diện mở bằng Live Server (cổng 5500) mà API ở 8080: đặt "http://localhost:8080"
  */
-const API_BASE_URL_OVERRIDE = null;
+/** Chỉ domain (KHÔNG thêm /api/...). VD bạn gửi .../api/auth → đặt hết phần ...ngrok-free.dev */
+const API_BASE_URL_OVERRIDE = "https://gigglier-colten-answerlessly.ngrok-free.dev";
 
 const API_BASE_URL = (() => {
   if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
@@ -74,6 +75,9 @@ const API_TIMEOUT_MS = 15000;
 async function apiRequest(path, { method = "GET", body } = {}) {
   const url = `${API_BASE_URL}${path}`;
   const headers = {};
+  if (API_BASE_URL.includes("ngrok")) {
+    headers["ngrok-skip-browser-warning"] = "true";
+  }
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
