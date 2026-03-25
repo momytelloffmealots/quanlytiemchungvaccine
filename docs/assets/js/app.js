@@ -1,7 +1,7 @@
 function requireLogin() {
   const session = getSession();
   if (!session?.success) {
-    window.location.href = "/login.html";
+    window.location.href = "login.html";
     return null;
   }
   return session;
@@ -9,7 +9,7 @@ function requireLogin() {
 
 function logout() {
   clearSession();
-  window.location.href = "/login.html";
+  window.location.href = "login.html";
 }
 
 function renderSidebar(session) {
