@@ -14,9 +14,9 @@
         <span class="badge">Demo GitHub Pages</span>
       </div>
       <h2 style="margin:0 0 8px;">Đăng nhập</h2>
-      <div class="hint" style="margin-bottom:14px;">Dùng để truy cập các trang theo vai trò.</div>
+      <div class="hint" style="margin-bottom:14px;">Dùng để truy cập các trang theo vai trò. Trên <b>github.io</b> cần backend công khai (HTTPS); <code>localhost:8080</code> sẽ không hoạt động.</div>
 
-      <div id="msg" class="msg" style="display:none;"></div>
+      <div id="msg" class="msg" style="display:none;margin-bottom:12px;"></div>
 
       <form id="loginForm">
         <div class="field">
@@ -28,7 +28,7 @@
           <input id="password" name="password" type="password" placeholder="Mật khẩu" required />
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
-          <button class="btn primary" type="submit">Đăng nhập</button>
+          <button class="btn primary" type="submit" id="loginBtn">Đăng nhập</button>
           <span class="hint">API: đổi trong `assets/js/api.js` nếu cần.</span>
         </div>
       </form>
@@ -48,8 +48,13 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const loginBtn = document.getElementById("loginBtn");
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Đang xử lý…";
+      msg.style.display = "none";
 
       try{
         const payload = await apiRequest("/api/auth/login", {
@@ -64,7 +69,11 @@
         localStorage.setItem("session", JSON.stringify(payload));
         window.location.href = "dashboard.html";
       }catch(err){
-        showMsg(err.message || "Lỗi đăng nhập", true);
+        const text = (err && err.message) ? String(err.message) : String(err || "Lỗi đăng nhập");
+        showMsg(text, true);
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Đăng nhập";
       }
     });
   </script>
