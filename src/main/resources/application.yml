@@ -9,5 +9,5 @@ spring:
     password: 1234 # Thay bằng mật khẩu MySQL của bạn
 app:
   password:
-    hash-enabled: true
+    hash-enabled: false
 
