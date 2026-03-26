@@ -1,19 +1,21 @@
-package com.example.vaccinationsystem.controller;
+package com.example.vaccinationsystem.dao.controller;
 
-import com.example.vaccinationsystem.dto.VaccineDTO;
-import com.example.vaccinationsystem.dto.VaccineExpiringDTO;
-import com.example.vaccinationsystem.dto.VaccineTypeDTO;
-import com.example.vaccinationsystem.service.VaccineService;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.example.vaccinationsystem.dto.VaccineDTO;
+import com.example.vaccinationsystem.dto.VaccineExpiringDTO;
+import com.example.vaccinationsystem.dto.VaccineTypeDTO;
+import com.example.vaccinationsystem.service.VaccineService;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class VaccineController {
     private final VaccineService vaccineService;
 

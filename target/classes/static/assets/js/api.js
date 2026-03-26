@@ -3,7 +3,8 @@
  * GitHub Pages + API riêng: đặt URL đầy đủ HTTPS, ví dụ "https://ten-service.railway.app"
  * Giao diện mở bằng Live Server (cổng 5500) mà API ở 8080: đặt "http://localhost:8080"
  */
-const API_BASE_URL_OVERRIDE ="https://gigglier-colten-answerlessly.ngrok-free.dev/api/auth";
+/** Chỉ domain (KHÔNG thêm /api/...). VD bạn gửi .../api/auth → đặt hết phần ...ngrok-free.dev */
+const API_BASE_URL_OVERRIDE = "https://gigglier-colten-answerlessly.ngrok-free.dev";
 
 const API_BASE_URL = (() => {
   if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
@@ -27,7 +28,10 @@ function apiConnectionHint() {
     const localApi =
       API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1");
     if (onGhPages && localApi) {
-      return " Bạn đang xem site trên GitHub Pages (HTTPS); trình duyệt không cho gọi http://localhost:8080. Hãy đổi API_BASE_URL trong assets/js/api.js sang URL backend của bạn (HTTPS, công khai) hoặc chạy giao diện trên máy local cùng lúc với Spring Boot.";
+      return " Bạn đang xem site trên GitHub Pages (HTTPS); trình duyệt không cho gọi http://localhost:8080. Trong assets/js/api.js hãy đặt API_BASE_URL_OVERRIDE = URL HTTPS (vd ngrok), rồi commit + push để Pages cập nhật.";
+    }
+    if (onGhPages && !localApi) {
+      return " Kiểm tra: (1) Spring Boot đang chạy, (2) ngrok/tunnel còn mở và URL trong api.js khớp, (3) đã push file mới lên GitHub — thử Ctrl+F5. Lỗi mạng/CORS cũng gây Failed to fetch.";
     }
   } catch (_) {
     /* ignore */
@@ -74,6 +78,9 @@ const API_TIMEOUT_MS = 15000;
 async function apiRequest(path, { method = "GET", body } = {}) {
   const url = `${API_BASE_URL}${path}`;
   const headers = {};
+  if (API_BASE_URL.includes("ngrok")) {
+    headers["ngrok-skip-browser-warning"] = "true";
+  }
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
