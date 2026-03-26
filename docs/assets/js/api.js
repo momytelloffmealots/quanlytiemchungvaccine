@@ -3,7 +3,7 @@
  * GitHub Pages + API riêng: đặt URL đầy đủ HTTPS, ví dụ "https://ten-service.railway.app"
  * Giao diện mở bằng Live Server (cổng 5500) mà API ở 8080: đặt "http://localhost:8080"
  */
-const API_BASE_URL_OVERRIDE ="https://gigglier-colten-answerlessly.ngrok-free.dev/api/auth";
+const API_BASE_URL_OVERRIDE ="https://gigglier-colten-answerlessly.ngrok-free.dev";
 
 const API_BASE_URL = (() => {
   if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
