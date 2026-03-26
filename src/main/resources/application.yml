@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/vaccine?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/VACCINATION_SYSTEM?useSSL=false&serverTimezone=UTC
     username: root
     password: 1234 # Thay bằng mật khẩu MySQL của bạn
 app:
