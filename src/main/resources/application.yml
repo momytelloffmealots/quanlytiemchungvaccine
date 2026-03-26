@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:VACCINATION_SYSTEM}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    url: jdbc:mysql://localhost:3306/vaccine?
+    username: root
+    password: 1234
   jackson:
     serialization:
       write-dates-as-timestamps: false
