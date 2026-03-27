@@ -20,10 +20,11 @@ function renderSidebar(session) {
   const administratorId = session?.administratorId;
 
   const items = [
+    { id: "nav-customers", show: !!(doctorId || administratorId) },
     { id: "nav-vaccine", show: true },
     { id: "nav-forms", show: !!(doctorId || inventoryManagerId || administratorId) },
     { id: "nav-payment", show: !!(cashierId || administratorId) },
-    { id: "nav-statistics", show: !!administratorId },
+    { id: "nav-statistics", show: !!(inventoryManagerId || cashierId || administratorId) },
     { id: "nav-history", show: !!doctorId },
     { id: "nav-account", show: !!administratorId },
   ];
