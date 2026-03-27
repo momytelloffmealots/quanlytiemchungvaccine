@@ -13,26 +13,30 @@ function logout() {
 }
 
 function renderSidebar(session) {
-  const auth = session?.authority || "";
+  const authRaw = session?.authority ?? session?.role ?? session?.userRole ?? session?.AUTHORITY ?? "";
+  const auth = String(authRaw).trim().toUpperCase();
+  
   const doctorId = session?.doctorId;
   const cashierId = session?.cashierId;
   const inventoryManagerId = session?.inventoryManagerId;
   const administratorId = session?.administratorId;
 
+  // Cấp toàn quyền cho Admin nếu có ID hoặc role là ADMIN/ADMINISTRATOR
+  const isAdmin = auth.includes("ADMIN") || !!administratorId;
+
   const items = [
-    { id: "nav-customers", show: !!(doctorId || administratorId) },
+    { id: "nav-customers", show: !!(doctorId || isAdmin) },
     { id: "nav-vaccine", show: true },
-    { id: "nav-forms", show: !!(doctorId || inventoryManagerId || administratorId) },
-    { id: "nav-payment", show: !!(cashierId || administratorId) },
-    { id: "nav-statistics", show: !!(inventoryManagerId || cashierId || administratorId) },
-    { id: "nav-history", show: !!doctorId },
-    { id: "nav-account", show: !!administratorId },
+    { id: "nav-forms", show: !!(doctorId || inventoryManagerId || isAdmin) },
+    { id: "nav-payment", show: !!(cashierId || isAdmin) },
+    { id: "nav-statistics", show: !!(inventoryManagerId || cashierId || isAdmin) },
+    { id: "nav-history", show: !!(doctorId || isAdmin) },
+    { id: "nav-account", show: !!isAdmin },
   ];
 
-  // if you store authority strings differently, still keep a fallback
-  const fallback = items.map((it) => it.show);
+  // Nếu có role khác lạ không khớp các ID trên, mặc định mở hết để tránh kẹt
+  const fallback = items.filter(it => it.id !== "nav-vaccine").map((it) => it.show);
   if (fallback.every((x) => x === false) && auth) {
-    // best effort: show all
     items.forEach((it) => (it.show = true));
   }
 
