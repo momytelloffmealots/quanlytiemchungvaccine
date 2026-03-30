@@ -1,4 +1,4 @@
-const API_BASE_URL_OVERRIDE = "quanlytiemchungvaccine-production-f8af.up.railway.app";
+const API_BASE_URL_OVERRIDE = "https://quanlytiemchungvaccine-production-f8af.up.railway.app";
 //https://gigglier-colten-answerlessly.ngrok-free.dev
 const API_BASE_URL = (() => {
   if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
