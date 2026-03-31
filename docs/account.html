@@ -208,6 +208,7 @@
           <td><span class="${badgeClass}">${roleName}</span></td>
           <td>${a.email || ""}</td>
           <td style="text-align:right;">
+             <button class="btn" style="padding:4px 8px;font-size:0.85rem;margin-right:4px;" onclick='openEditModal(${JSON.stringify(a)})'>Sửa</button>
              <button class="btn" style="padding:4px 8px;font-size:0.85rem;" onclick="deleteAccount('${a.accountId}')">Xóa</button>
           </td>
         `;
@@ -218,9 +219,24 @@
     /* Modal Logic */
     function openModal() {
       document.getElementById("modalTitle").textContent = "Thêm Tài Khoản (Phiên Bản Mới)";
-      document.getElementById("acctForm").reset();
+      document.getElementById("accountForm").reset();
       document.getElementById("acctId").value = "";
+      document.getElementById("acctUsername").disabled = false;
+      document.getElementById("acctRole").disabled = false;
       document.getElementById("passwordField").style.display = "block";
+      document.getElementById("accountModal").style.display = "block";
+    }
+
+    function openEditModal(a) {
+      document.getElementById("modalTitle").textContent = "Sửa Thông Tin Tài Khoản";
+      document.getElementById("acctId").value = a.accountId;
+      document.getElementById("acctUsername").value = a.username;
+      document.getElementById("acctUsername").disabled = true;
+      document.getElementById("acctName").value = a.employeeName;
+      document.getElementById("acctEmail").value = a.email;
+      document.getElementById("acctRole").value = a.authority;
+      document.getElementById("acctRole").disabled = true;
+      document.getElementById("passwordField").style.display = "none";
       document.getElementById("accountModal").style.display = "block";
     }
 
@@ -240,9 +256,15 @@
       };
 
       try {
-         // Create mode only for now, updating roles is complex
-         await apiRequest("/api/accounts", { method: "POST", body: payload });
-         showMsg("Tạo tài khoản thành công!", false);
+         if (accountId) {
+            // Edit mode
+            await apiRequest("/api/accounts/" + accountId, { method: "PUT", body: payload });
+            showMsg("Cập nhật thành công!", false);
+         } else {
+            // Create mode
+            await apiRequest("/api/accounts", { method: "POST", body: payload });
+            showMsg("Tạo tài khoản thành công!", false);
+         }
          closeModal();
          fetchAccounts();
       } catch (err) {
