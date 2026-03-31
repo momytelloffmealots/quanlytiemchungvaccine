@@ -140,19 +140,35 @@
     initPage();
 
     async function loadStats() {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const role = user.authority || "";
+      const session = getSession();
+      if (!session) return;
+      
+      const authRaw = session.authority ?? session.role ?? session.userRole ?? session.AUTHORITY ?? "";
+      const role = String(authRaw).trim().toUpperCase();
       
       // Show sections based on role
-      if (role === "ADMINISTRATOR" || role === "ADMIN") {
+      const isAdmin = role.includes("ADMIN") || !!session.administratorId;
+      const isDoctor = role.includes("DOCTOR") || !!session.doctorId;
+      const isCashier = role.includes("CASHIER") || !!session.cashierId;
+      const isInventory = role.includes("INVENTORY") || role.includes("QK") || !!session.inventoryManagerId;
+
+      if (isAdmin) {
         document.getElementById("section-admin").classList.add("active");
         document.getElementById("section-inventory").classList.add("active");
-      } else if (role === "DOCTOR") {
+      }
+      if (isDoctor) {
         document.getElementById("section-doctor").classList.add("active");
-      } else if (role === "CASHIER") {
+      } 
+      if (isCashier) {
         document.getElementById("section-cashier").classList.add("active");
-      } else if (role === "INVENTORY_MANAGER") {
+      }
+      if (isInventory) {
         document.getElementById("section-inventory").classList.add("active");
+      }
+
+      if (!isAdmin && !isDoctor && !isCashier && !isInventory) {
+        document.getElementById("noDataMsg").style.display = "block";
+        document.getElementById("noDataMsg").textContent = "Không có dữ liệu thống kê cho vai trò này.";
       }
 
       try {

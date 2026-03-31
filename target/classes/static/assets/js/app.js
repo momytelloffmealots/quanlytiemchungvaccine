@@ -29,7 +29,7 @@ function renderSidebar(session) {
     { id: "nav-vaccine", show: true },
     { id: "nav-forms", show: !!(doctorId || inventoryManagerId || isAdmin) },
     { id: "nav-payment", show: !!(cashierId || isAdmin) },
-    { id: "nav-statistics", show: !!(inventoryManagerId || cashierId || isAdmin) },
+    { id: "nav-statistics", show: !!(doctorId || inventoryManagerId || cashierId || isAdmin) },
     { id: "nav-history", show: !!(doctorId || isAdmin) },
     { id: "nav-account", show: !!isAdmin },
   ];
