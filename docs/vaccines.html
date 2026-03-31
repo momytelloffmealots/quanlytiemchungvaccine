@@ -39,9 +39,19 @@
           <h2 style="margin:0 0 10px;">Danh sách vaccine</h2>
 
           <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="vaccineId">Mã Vaccine</option>
+                <option value="name">Tên Vaccine</option>
+                <option value="manufacturer">Nhà sản xuất</option>
+                <option value="vaccineTypeName">Loại</option>
+              </select>
+            </div>
             <div class="field" style="flex:1;min-width:260px;">
-              <label for="keyword">Tìm kiếm</label>
-              <input id="keyword" placeholder="MAVACCINE / TENVACCINE / NHASX / LOAIVACCINE ..." />
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa..." />
             </div>
             <div class="field">
               <label for="days">Sắp hết hạn (ngày)</label>
@@ -128,10 +138,24 @@
 
     async function searchAll(){
       currentMode = "search";
-      const keyword = document.getElementById("keyword").value || "";
+      const field = document.getElementById("searchField").value;
+      const keyword = document.getElementById("keyword").value.trim().toLowerCase();
       try{
-        const payload = await apiRequest(`/api/vaccines/search?keyword=${encodeURIComponent(keyword)}`);
-        renderRows(payload, { showDaysLeft:false });
+        if (field === "all") {
+           // Giữ nguyên logic tìm ở mọi cột trên server
+           const payload = keyword
+             ? await apiRequest(`/api/vaccines/search?keyword=${encodeURIComponent(keyword)}`)
+             : await apiRequest("/api/vaccines");
+           renderRows(payload, { showDaysLeft:false });
+        } else {
+           // Tìm riêng lẻ từng trường bằng cách lấy tất cả về và lọc thủ công
+           const allVaccines = await apiRequest("/api/vaccines");
+           const filtered = allVaccines.filter(v => {
+              const val = v[field] ? String(v[field]).toLowerCase() : "";
+              return val.includes(keyword);
+           });
+           renderRows(filtered, { showDaysLeft:false });
+        }
         showMsg("Tìm kiếm thành công.");
       }catch(err){
         showMsg(err.message, true);

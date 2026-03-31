@@ -39,9 +39,18 @@
           <h2 style="margin:0 0 10px;">Danh sách khách hàng</h2>
           
           <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="name">Tên Khách Hàng</option>
+                <option value="gender">Giới Tính</option>
+                <option value="birthDate">Ngày Sinh</option>
+              </select>
+            </div>
             <div class="field" style="flex:1;min-width:260px;">
-              <label for="keyword">Tra cứu khách hàng</label>
-              <input id="keyword" placeholder="Nhập tên khách hàng để lọc..." />
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
             </div>
             <div style="align-self:flex-end;">
               <button class="btn primary" onclick="renderTable()">Tìm kiếm</button>
@@ -143,11 +152,19 @@
     }
 
     function renderTable() {
+      const field = document.getElementById("searchField").value;
       const kw = document.getElementById("keyword").value.toLowerCase().trim();
       const body = document.getElementById("tBody");
       body.innerHTML = "";
 
-      const filtered = customersData.filter(c => c.name.toLowerCase().includes(kw));
+      const filtered = customersData.filter(c => {
+         if (field === "all") {
+            return c.name.toLowerCase().includes(kw) || c.gender.toLowerCase().includes(kw) || c.birthDate.toLowerCase().includes(kw);
+         } else {
+            const val = c[field] ? String(c[field]).toLowerCase() : "";
+            return val.includes(kw);
+         }
+      });
       
       for(const c of filtered) {
         const tr = document.createElement("tr");
