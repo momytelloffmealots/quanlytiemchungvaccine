@@ -37,4 +37,25 @@ public class CustomerDao {
         String sql = "SELECT * FROM CUSTOMER WHERE NAME LIKE ? ORDER BY NAME";
         return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER, "%" + name + "%");
     }
+
+    public String getLatestCustomerId() {
+        String sql = "SELECT CUSTOMER_ID FROM CUSTOMER ORDER BY CUSTOMER_ID DESC LIMIT 1";
+        List<String> rows = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString(1));
+        return rows.isEmpty() ? "KH000" : rows.get(0);
+    }
+
+    public void insertCustomer(String id, CustomerDTO dto) {
+        String sql = """
+                INSERT INTO CUSTOMER (CUSTOMER_ID, NAME, GENDER, DATE_OF_BIRTH, PHONE_NUM, EMAIL, BIOGRAPHY)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
+        jdbcTemplate.update(sql,
+                id,
+                dto.getName(),
+                dto.getGender(),
+                dto.getDateOfBirth() != null ? java.sql.Date.valueOf(dto.getDateOfBirth()) : null,
+                dto.getPhoneNum(),
+                dto.getEmail(),
+                dto.getAddress());
+    }
 }

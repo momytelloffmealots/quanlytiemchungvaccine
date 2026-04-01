@@ -25,4 +25,9 @@ public class CustomerController {
     public List<CustomerDTO> searchByName(@RequestParam("name") String name) {
         return customerService.searchByName(name);
     }
+
+    @PostMapping
+    public String create(@RequestBody CustomerDTO dto) {
+        return customerService.createCustomer(dto);
+    }
 }

@@ -7,6 +7,10 @@ public class AccountInfoDTO {
     private String authority;
     private String employeeId;
     private String employeeName;
+    private String password;
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public String getAccountId() { return accountId; }
     public void setAccountId(String accountId) { this.accountId = accountId; }

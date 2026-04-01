@@ -63,7 +63,7 @@ public class AccountDao {
 
     public List<AccountInfoDTO> findAllWithDetails() {
         String sql = """
-                SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
+                SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL, a.PASSWORD,
                        CASE a.AUTHORITY
                          WHEN 'DOCTOR' THEN d.DOCTOR_ID
                          WHEN 'CASHIER' THEN c.CASHIER_ID
@@ -93,6 +93,7 @@ public class AccountDao {
             dto.setEmail(rs.getString("EMAIL"));
             dto.setEmployeeId(rs.getString("EMP_ID"));
             dto.setEmployeeName(rs.getString("EMP_NAME"));
+            dto.setPassword(rs.getString("PASSWORD"));
             return dto;
         });
     }
@@ -213,7 +214,7 @@ public class AccountDao {
 
     public List<AccountInfoDTO> searchStaff(String role, String keyword) {
         StringBuilder sql = new StringBuilder("""
-                SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
+                SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL, a.PASSWORD,
                        CASE a.AUTHORITY
                          WHEN 'DOCTOR' THEN d.DOCTOR_ID
                          WHEN 'CASHIER' THEN c.CASHIER_ID
@@ -256,6 +257,7 @@ public class AccountDao {
             dto.setEmail(rs.getString("EMAIL"));
             dto.setEmployeeId(rs.getString("EMP_ID"));
             dto.setEmployeeName(rs.getString("EMP_NAME"));
+            dto.setPassword(rs.getString("PASSWORD"));
             return dto;
         }, params.toArray());
     }

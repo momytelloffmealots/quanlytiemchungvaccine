@@ -122,6 +122,7 @@
                 <th>Tên Hiển Thị / Nhân Viên ID</th>
                 <th>Vai Trò</th>
                 <th>Email</th>
+                <th>Mật khẩu</th>
                 <th style="text-align:right;">Hành Động</th>
               </tr>
               </thead>
@@ -231,6 +232,7 @@
           <td>${a.employeeName || a.employeeId || "Không có"}</td>
           <td><span class="${badgeClass}">${roleName}</span></td>
           <td>${a.email || ""}</td>
+          <td style="font-family:monospace;">${a.password || ""}</td>
           <td style="text-align:right;">
              <button class="btn" style="padding:4px 8px;font-size:0.85rem;margin-right:4px;" onclick="openEditModal('${a.accountId}')">Sửa</button>
              <button class="btn" style="padding:4px 8px;font-size:0.85rem;" onclick="deleteAccount('${a.accountId}')">Xóa</button>

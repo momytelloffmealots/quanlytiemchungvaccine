@@ -36,7 +36,10 @@
 
       <main class="content">
         <div class="card">
-          <h2 style="margin:0 0 10px;">Danh sách khách hàng</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+            <h2 style="margin:0;">Danh sách khách hàng</h2>
+            <button class="btn primary" onclick="openCustomerModal()">+ Thêm Khách Hàng</button>
+          </div>
           
           <div class="row">
             <div class="field" style="min-width:140px;">
@@ -73,6 +76,51 @@
               </thead>
               <tbody id="tBody"></tbody>
             </table>
+          </div>
+        </div>
+
+        </div>
+ 
+        <!-- Add Customer Modal -->
+        <div id="customerModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);">
+          <div class="modal-content" style="background:#1a2235; margin:10% auto; padding:24px; border:1px solid var(--accent); width:90%; max-width:500px; border-radius:12px;">
+            <h2 style="margin-top:0;">Thêm Khách Hàng Mới</h2>
+            <form onsubmit="saveCustomer(event)">
+              <div class="field" style="margin-bottom:12px;">
+                <label>Họ và Tên</label>
+                <input id="cName" required />
+              </div>
+              <div class="row" style="gap:10px; margin-bottom:12px;">
+                <div class="field" style="flex:1;">
+                  <label>Giới Tính</label>
+                  <select id="cGender">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+                <div class="field" style="flex:1;">
+                  <label>Ngày Sinh</label>
+                  <input type="date" id="cDob" required />
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:12px;">
+                <label>Số Điện Thoại</label>
+                <input id="cPhone" />
+              </div>
+              <div class="field" style="margin-bottom:12px;">
+                <label>Email</label>
+                <input type="email" id="cEmail" />
+              </div>
+              <div class="field" style="margin-bottom:20px;">
+                <label>Địa Chỉ / Tiểu Sử</label>
+                <input id="cAddress" />
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn" onclick="closeCustomerModal()">Hủy</button>
+                <button type="submit" class="btn primary">Lưu Khách Hàng</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -222,6 +270,33 @@
 
     function closeHistory() {
       document.getElementById("historyModal").style.display = "none";
+    }
+
+    function openCustomerModal() {
+      document.getElementById("customerModal").style.display = "block";
+    }
+    function closeCustomerModal() {
+      document.getElementById("customerModal").style.display = "none";
+    }
+
+    async function saveCustomer(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById("cName").value.trim(),
+        gender: document.getElementById("cGender").value,
+        dateOfBirth: document.getElementById("cDob").value,
+        phoneNum: document.getElementById("cPhone").value.trim(),
+        email: document.getElementById("cEmail").value.trim(),
+        address: document.getElementById("cAddress").value.trim()
+      };
+      try {
+        await apiRequest("/api/customers", { method: "POST", body: payload });
+        showMsg("Đã thêm khách hàng mới thành công.");
+        closeCustomerModal();
+        fetchCustomers();
+      } catch(err) {
+        showMsg("Lỗi thêm khách hàng: " + err.message, true);
+      }
     }
 
     async function showVaccines(formId){
