@@ -27,8 +27,14 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @RequestBody AccountCreateRequest request) {
-        accountService.updateAccount(id, request);
+    public org.springframework.http.ResponseEntity<java.util.Map<String, String>> update(@PathVariable String id, @RequestBody AccountCreateRequest request) {
+        try {
+            accountService.updateAccount(id, request);
+            return org.springframework.http.ResponseEntity.ok(java.util.Collections.singletonMap("message", "Updated"));
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.status(400)
+                    .body(java.util.Collections.singletonMap("message", "Lỗi khi cập nhật vai trò: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -136,9 +136,22 @@ public class AccountService {
     }
 
     private String generateNextId(String currentId, String prefix) {
-        // currentId format: PRE001
-        String numericPart = currentId.substring(prefix.length());
-        int nextNum = Integer.parseInt(numericPart) + 1;
+        // Find the numeric part at the end of the string
+        StringBuilder numStr = new StringBuilder();
+        for (int i = currentId.length() - 1; i >= 0; i--) {
+            char c = currentId.charAt(i);
+            if (Character.isDigit(c)) {
+                numStr.insert(0, c);
+            } else {
+                break;
+            }
+        }
+        
+        int nextNum = 1;
+        if (numStr.length() > 0) {
+            nextNum = Integer.parseInt(numStr.toString()) + 1;
+        }
+        
         return String.format("%s%03d", prefix, nextNum);
     }
 }
