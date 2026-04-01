@@ -44,7 +44,19 @@ async function apiRequest(path, { method = "GET", body } = {}) {
     } catch (_) {}
 
     if (!res.ok) {
-      const msg = payload?.message || `Lỗi: ${res.status}`;
+      let msg = "";
+      if (payload) {
+        msg = payload.message || payload.error || "";
+      }
+      
+      if (!msg) {
+        try {
+          const text = await res.text();
+          if (text && text.length < 200) msg = text;
+        } catch (_) {}
+      }
+
+      if (!msg) msg = `Lỗi hệ thống (${res.status})`;
       throw new Error(msg);
     }
     return payload;

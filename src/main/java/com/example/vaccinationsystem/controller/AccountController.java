@@ -32,8 +32,14 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) {
-        accountService.deleteAccount(id);
+    public org.springframework.http.ResponseEntity<java.util.Map<String, String>> delete(@PathVariable String id) {
+        try {
+            accountService.deleteAccount(id);
+            return org.springframework.http.ResponseEntity.ok(java.util.Collections.singletonMap("message", "Deleted"));
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.status(400)
+                    .body(java.util.Collections.singletonMap("message", "Không thể xóa: Nhân sự này có ràng buộc dữ liệu (tiêm chủng/thanh toán) chưa thể gỡ bỏ."));
+        }
     }
 
     @GetMapping("/search")

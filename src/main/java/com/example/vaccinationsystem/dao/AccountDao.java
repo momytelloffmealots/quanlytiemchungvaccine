@@ -4,7 +4,6 @@ import com.example.vaccinationsystem.dto.AccountInfoDTO;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -134,18 +133,35 @@ public class AccountDao {
         jdbcTemplate.update(sql, accountId);
     }
 
-    @Transactional
     public void deleteAccountCascade(String accountId) {
         // 1. Get role IDs first
         Optional<String> docId = findDoctorIdByAccountId(accountId);
         Optional<String> cashId = findCashierIdByAccountId(accountId);
 
-        // 2. Nullify references in Vaccination Form & Bill to avoid FK errors
-        docId.ifPresent(id -> jdbcTemplate.update("UPDATE VACCINATION_FORM SET DOCTOR_ID = NULL WHERE DOCTOR_ID = ?", id));
-        cashId.ifPresent(id -> {
-            jdbcTemplate.update("UPDATE VACCINATION_FORM SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
-            jdbcTemplate.update("UPDATE BILL SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
-        });
+        // 2. Nullify references (Try-Catch to handle missing tables/columns)
+        try {
+            docId.ifPresent(id -> jdbcTemplate.update("UPDATE VACCINATION_FORM SET DOCTOR_ID = NULL WHERE DOCTOR_ID = ?", id));
+        } catch (Exception ignored) {}
+        
+        try {
+            cashId.ifPresent(id -> {
+                jdbcTemplate.update("UPDATE VACCINATION_FORM SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
+            });
+        } catch (Exception ignored) {}
+        
+        try {
+            cashId.ifPresent(id -> {
+                jdbcTemplate.update("UPDATE BILL SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
+            });
+        } catch (Exception ignored) {}
+
+        // Nullify Inventory Manager reference in Vaccine table
+        Optional<String> invId = findInventoryManagerIdByAccountId(accountId);
+        try {
+            invId.ifPresent(id -> {
+                jdbcTemplate.update("UPDATE VACCINE SET INVENTORY_MANAGER_ID = NULL WHERE INVENTORY_MANAGER_ID = ?", id);
+            });
+        } catch (Exception ignored) {}
 
         // 3. Delete from role tables
         jdbcTemplate.update("DELETE FROM DOCTOR WHERE ACCOUNT_ID = ?", accountId);

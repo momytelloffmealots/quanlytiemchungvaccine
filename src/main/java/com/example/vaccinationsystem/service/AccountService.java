@@ -126,6 +126,7 @@ public class AccountService {
         };
     }
 
+    @Transactional
     public void deleteAccount(String id) {
         accountDao.deleteAccountCascade(id);
     }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class BillDao {
@@ -83,7 +82,7 @@ public class BillDao {
                 FROM BILL b
                 JOIN VACCINATION_FORM f ON f.VACCINATION_FORM_ID = b.VACCINATION_FORM_ID
                 JOIN CUSTOMER c ON c.CUSTOMER_ID = f.CUSTOMER_ID
-                JOIN CASHIER cash ON cash.CASHIER_ID = b.CASHIER_ID
+                LEFT JOIN CASHIER cash ON cash.CASHIER_ID = b.CASHIER_ID
                 ORDER BY b.BILL_ID DESC
                 """;
 
