@@ -63,13 +63,16 @@ public class AccountService {
         String oldRole = current.getAuthority();
         String newRole = request.getAuthority();
 
-        // 2. Update Email in ACCOUNT table
-        accountDao.updateAccount(id, request.getEmail());
+        // 2. Update Email and Password in ACCOUNT table
+        accountDao.updateAccount(id, request.getEmail(), request.getPassword());
 
         if (newRole != null && !newRole.equals(oldRole)) {
             // ROLE CHANGED: Migrate between tables
             
-            // Delete from old table
+            // 1. Nullify references before deleting old role row to avoid FK errors
+            accountDao.nullifyEmployeeReferences(id);
+            
+            // 2. Delete from old table
             String oldTable = getTableName(oldRole);
             if (!oldTable.isEmpty()) {
                 accountDao.deleteFromRoleTable(oldTable, id);

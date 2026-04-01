@@ -327,7 +327,11 @@
         showMsg("Đã xóa tài khoản ID: " + id, false);
         fetchAccounts();
       } catch(err) {
-        showMsg("Không thể xóa: " + err.message, true);
+        let errMsg = err.message;
+        if (errMsg.includes("ràng buộc")) {
+          errMsg += "\n\n(Lưu ý: Bạn không thể xóa nhân viên đã có lịch sử tiêm chủng hoặc hóa đơn để bảo vệ tính toàn vẹn của dữ liệu. Hãy đổi mật khẩu tài khoản nếu muốn ngừng sử dụng.)";
+        }
+        showMsg(errMsg, true);
       }
     }
 

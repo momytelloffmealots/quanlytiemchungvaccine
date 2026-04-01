@@ -115,8 +115,12 @@ public class AccountDao {
         jdbcTemplate.update(sql, empId, acctId, name);
     }
 
-    public void updateAccount(String id, String email) {
-        jdbcTemplate.update("UPDATE ACCOUNT SET EMAIL = ? WHERE ACCOUNT_ID = ?", email, id);
+    public void updateAccount(String id, String email, String password) {
+        if (password != null && !password.isEmpty()) {
+            jdbcTemplate.update("UPDATE ACCOUNT SET EMAIL = ?, PASSWORD = ? WHERE ACCOUNT_ID = ?", email, password, id);
+        } else {
+            jdbcTemplate.update("UPDATE ACCOUNT SET EMAIL = ? WHERE ACCOUNT_ID = ?", email, id);
+        }
     }
 
     public void updateAuthority(String id, String authority) {
@@ -133,10 +137,11 @@ public class AccountDao {
         jdbcTemplate.update(sql, accountId);
     }
 
-    public void deleteAccountCascade(String accountId) {
+    public void nullifyEmployeeReferences(String accountId) {
         // 1. Get role IDs first
         Optional<String> docId = findDoctorIdByAccountId(accountId);
         Optional<String> cashId = findCashierIdByAccountId(accountId);
+        Optional<String> invId = findInventoryManagerIdByAccountId(accountId);
 
         // 2. Nullify references (Try-Catch to handle missing tables/columns)
         try {
@@ -155,21 +160,24 @@ public class AccountDao {
             });
         } catch (Exception ignored) {}
 
-        // Nullify Inventory Manager reference in Vaccine table
-        Optional<String> invId = findInventoryManagerIdByAccountId(accountId);
         try {
             invId.ifPresent(id -> {
                 jdbcTemplate.update("UPDATE VACCINE SET INVENTORY_MANAGER_ID = NULL WHERE INVENTORY_MANAGER_ID = ?", id);
             });
         } catch (Exception ignored) {}
+    }
 
-        // 3. Delete from role tables
+    public void deleteAccountCascade(String accountId) {
+        // 1. Nullify references in Vaccination Form & Bill to avoid FK errors
+        nullifyEmployeeReferences(accountId);
+
+        // 2. Delete from role tables
         jdbcTemplate.update("DELETE FROM DOCTOR WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM CASHIER WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM INVENTORY_MANAGER WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM ADMINISTRATOR WHERE ACCOUNT_ID = ?", accountId);
         
-        // 4. Finally delete account
+        // 3. Finally delete account
         jdbcTemplate.update("DELETE FROM ACCOUNT WHERE ACCOUNT_ID = ?", accountId);
     }
 
