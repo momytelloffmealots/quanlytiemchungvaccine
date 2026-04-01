@@ -1,23 +1,22 @@
 :root {
-  /* Nền phẳng — không gradient để tránh vệt ngang / cắt màu */
-  --bg: #1a1d27;
-  --bg-elevated: #252a36;
-  --panel: #2a303c;
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --muted: #9ca3af;
-  --text: #f3f4f6;
-  --text-soft: #d1d5db;
+  --bg: #0b1220;
+  --bg-elevated: #131b2c;
+  --panel: rgba(30, 37, 56, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --muted: #94a3b8;
+  --text: #f8fafc;
+  --text-soft: #cbd5e1;
   --accent: #818cf8;
-  --accent-dim: rgba(129, 140, 248, 0.18);
+  --accent-dim: rgba(129, 140, 248, 0.15);
   --accent-hover: #a5b4fc;
-  --link: #93c5fd;
-  --danger: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.12);
-  --notice-bg: rgba(129, 140, 248, 0.12);
-  --notice-border: rgba(129, 140, 248, 0.35);
+  --link: #60a5fa;
+  --danger: #fb7185;
+  --danger-bg: rgba(251, 113, 133, 0.12);
+  --notice-bg: rgba(99, 102, 241, 0.12);
+  --notice-border: rgba(99, 102, 241, 0.35);
   --notice-text: #e0e7ff;
-  --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -33,9 +32,9 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    sans-serif;
-  background-color: var(--bg);
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: radial-gradient(ellipse at top left, #1a2235 0%, var(--bg) 100%);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
 }
@@ -68,10 +67,16 @@ textarea {
 
 .card {
   background: var(--panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 .topbar {

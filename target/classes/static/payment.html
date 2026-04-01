@@ -37,7 +37,26 @@
       <main class="content">
         <div class="card">
           <h2 style="margin:0 0 10px;">Danh sách hóa đơn</h2>
-          <div style="overflow:auto;max-height:320px;">
+          <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="billId">Mã Bill</option>
+                <option value="vaccinationFormId">Mã Phiếu Tiêm</option>
+                <option value="customerName">Khách Hàng</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1;min-width:260px;">
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
+            </div>
+            <div style="align-self:flex-end;display:flex;gap:10px;">
+              <button class="btn primary" onclick="renderBillsTable()">Tìm kiếm</button>
+              <button class="btn primary" type="button" onclick="loadBills()">Tải lại bản bộ</button>
+            </div>
+          </div>
+          <div style="overflow:auto;max-height:320px;margin-top:14px;">
             <table>
               <thead>
               <tr>
@@ -54,7 +73,6 @@
             </table>
           </div>
           <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn primary" type="button" onclick="loadBills()">Tải lại</button>
           </div>
         </div>
 
@@ -116,26 +134,46 @@
       msg.className = "msg" + (isError ? " error" : "");
     }
 
+    let allBillsData = [];
+
     async function loadBills(){
       try{
-        const payload = await apiRequest("/api/bills");
-        const body = document.getElementById("billsBody");
-        body.innerHTML = "";
-        for (const b of payload){
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${b.billId}</td>
-            <td>${b.vaccinationFormId ?? ""}</td>
-            <td>${b.customerName ?? ""}</td>
-            <td>${b.cashierName ?? ""}</td>
-            <td>${b.discount ?? ""}</td>
-            <td>${b.dueDate ?? ""}</td>
-            <td>${b.totalAmount ?? ""}</td>
-          `;
-          body.appendChild(tr);
-        }
+        allBillsData = await apiRequest("/api/bills");
+        renderBillsTable();
       }catch(err){
         showMsg(err.message, true);
+      }
+    }
+
+    function renderBillsTable() {
+      const field = document.getElementById("searchField").value;
+      const kw = document.getElementById("keyword").value.toLowerCase().trim();
+      const body = document.getElementById("billsBody");
+      body.innerHTML = "";
+
+      const filtered = allBillsData.filter(b => {
+         if (field === "all") {
+            return (b.billId?.toLowerCase().includes(kw)) ||
+                   (b.vaccinationFormId?.toLowerCase().includes(kw)) ||
+                   (b.customerName?.toLowerCase().includes(kw));
+         } else {
+            const val = b[field] ? String(b[field]).toLowerCase() : "";
+            return val.includes(kw);
+         }
+      });
+
+      for (const b of filtered){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${b.billId}</td>
+          <td>${b.vaccinationFormId ?? ""}</td>
+          <td>${b.customerName ?? ""}</td>
+          <td>${b.cashierName ?? ""}</td>
+          <td>${b.discount ?? ""}</td>
+          <td>${b.dueDate ?? ""}</td>
+          <td>${b.totalAmount ?? ""}</td>
+        `;
+        body.appendChild(tr);
       }
     }
 

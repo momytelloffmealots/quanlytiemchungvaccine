@@ -36,7 +36,25 @@
       <main class="content">
         <div class="card">
           <h2 style="margin:0 0 10px;">Lịch sử tiêm (dựa trên phiếu tiêm)</h2>
-          <div class="hint" style="margin-bottom:12px;">
+          <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="vaccinationFormId">Mã Phiếu</option>
+                <option value="customerName">Khách Hàng</option>
+                <option value="vaccinationDate">Ngày Tiêm</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1;min-width:260px;">
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="renderHistoryTable()">Tìm kiếm</button>
+            </div>
+          </div>
+          <div class="hint" style="margin-bottom:12px;margin-top:10px;">
             Endpoint hiện tại dùng chung với `/api/vaccination-forms`.
           </div>
           <div style="overflow:auto;max-height:360px;">
@@ -62,11 +80,31 @@
   <script>
     initPage();
 
+    let allHistoryData = [];
+
     async function loadHistory(){
+      allHistoryData = await apiRequest("/api/vaccination-forms");
+      renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+      const field = document.getElementById("searchField").value;
+      const kw = document.getElementById("keyword").value.toLowerCase().trim();
       const body = document.getElementById("historyBody");
       body.innerHTML = "";
-      const forms = await apiRequest("/api/vaccination-forms");
-      for (const f of forms){
+
+      const filtered = allHistoryData.filter(f => {
+         if (field === "all") {
+            return (f.vaccinationFormId?.toLowerCase().includes(kw)) ||
+                   (f.customerName?.toLowerCase().includes(kw)) ||
+                   (f.vaccinationDate?.toLowerCase().includes(kw));
+         } else {
+            const val = f[field] ? String(f[field]).toLowerCase() : "";
+            return val.includes(kw);
+         }
+      });
+
+      for (const f of filtered){
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${f.vaccinationFormId}</td>

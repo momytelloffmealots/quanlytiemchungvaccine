@@ -36,7 +36,26 @@
       <main class="content">
         <div class="card">
           <h2 style="margin:0 0 10px;">Danh sách phiếu tiêm</h2>
-          <div style="overflow:auto;max-height:320px;">
+          <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="vaccinationFormId">Mã Phiếu</option>
+                <option value="customerName">Khách Hàng</option>
+                <option value="doctorName">Bác Sĩ</option>
+                <option value="vaccinationDate">Ngày Tiêm</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1;min-width:260px;">
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="renderFormsTable()">Tìm kiếm</button>
+            </div>
+          </div>
+          <div style="overflow:auto;max-height:320px;margin-top:14px;">
             <table>
               <thead>
               <tr>
@@ -164,29 +183,50 @@
       row.remove();
     }
 
+    let allFormsData = [];
+
     async function loadForms(){
       try{
-        const payload = await apiRequest("/api/vaccination-forms");
-        const body = document.getElementById("formsBody");
-        body.innerHTML = "";
-        for (const f of payload){
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${f.vaccinationFormId}</td>
-            <td>${f.customerName ?? ""}</td>
-            <td>${f.gender ?? ""}</td>
-            <td>${f.customerBirthDate ?? ""}</td>
-            <td>${f.doctorName ?? ""}</td>
-            <td>${f.cashierName ?? ""}</td>
-            <td>${f.vaccinationDate ?? ""}</td>
-            <td><button class="btn" type="button" onclick="openDetails('${f.vaccinationFormId}')">Xem</button></td>
-            <td><button class="btn" type="button" onclick="checkBill('${f.vaccinationFormId}')">Check</button></td>
-          `;
-          body.appendChild(tr);
-        }
+        allFormsData = await apiRequest("/api/vaccination-forms");
+        renderFormsTable();
         showMsg("Tải danh sách phiếu tiêm thành công.");
       }catch(err){
         showMsg(err.message, true);
+      }
+    }
+
+    function renderFormsTable() {
+      const field = document.getElementById("searchField").value;
+      const kw = document.getElementById("keyword").value.toLowerCase().trim();
+      const body = document.getElementById("formsBody");
+      body.innerHTML = "";
+
+      const filtered = allFormsData.filter(f => {
+         if (field === "all") {
+            return (f.vaccinationFormId?.toLowerCase().includes(kw)) ||
+                   (f.customerName?.toLowerCase().includes(kw)) ||
+                   (f.doctorName?.toLowerCase().includes(kw)) ||
+                   (f.vaccinationDate?.toLowerCase().includes(kw));
+         } else {
+            const val = f[field] ? String(f[field]).toLowerCase() : "";
+            return val.includes(kw);
+         }
+      });
+
+      for (const f of filtered){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${f.vaccinationFormId}</td>
+          <td>${f.customerName ?? ""}</td>
+          <td>${f.gender ?? ""}</td>
+          <td>${f.customerBirthDate ?? ""}</td>
+          <td>${f.doctorName ?? ""}</td>
+          <td>${f.cashierName ?? ""}</td>
+          <td>${f.vaccinationDate ?? ""}</td>
+          <td><button class="btn" type="button" onclick="openDetails('${f.vaccinationFormId}')">Xem</button></td>
+          <td><button class="btn" type="button" onclick="checkBill('${f.vaccinationFormId}')">Check</button></td>
+        `;
+        body.appendChild(tr);
       }
     }
 

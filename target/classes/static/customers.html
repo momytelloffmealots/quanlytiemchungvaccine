@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý khách hàng</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-accent">Vaccination</span>
+        <span class="badge">Khách hàng</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="role-pill" id="headerRole" title="Vai trò">—</span>
+        <a href="profile.html" class="header-user" id="headerUserLink">…</a>
+        <button class="btn" type="button" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
+        <div class="nav">
+          <a id="nav-customers" href="customers.html">Quản lý khách hàng</a>
+          <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
+          <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
+          <a id="nav-payment" href="payment.html">Thanh toán</a>
+          <a id="nav-statistics" href="statistics.html">Thống kê</a>
+          <a id="nav-history" href="history.html">Lịch sử tiêm</a>
+          <a id="nav-account" href="account.html">Quản lý tài khoản</a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="card">
+          <h2 style="margin:0 0 10px;">Danh sách khách hàng</h2>
+          
+          <div class="row">
+            <div class="field" style="min-width:140px;">
+              <label for="searchField">Trường tìm kiếm</label>
+              <select id="searchField">
+                <option value="all">Tất cả</option>
+                <option value="name">Tên Khách Hàng</option>
+                <option value="gender">Giới Tính</option>
+                <option value="birthDate">Ngày Sinh</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1;min-width:260px;">
+              <label for="keyword">Nội dung tìm kiếm</label>
+              <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="renderTable()">Tìm kiếm</button>
+            </div>
+          </div>
+
+          <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
+
+          <div style="margin-top:14px; overflow-x: auto;">
+            <table>
+              <thead>
+              <tr>
+                <th>Tên Khách Hàng</th>
+                <th>Giới Tính</th>
+                <th>Ngày Sinh</th>
+                <th>Số Lần Tiêm</th>
+                <th>Lần Tiêm Gần Nhất</th>
+                <th>Hành Nút</th>
+              </tr>
+              </thead>
+              <tbody id="tBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detail Modal Simulator -->
+        <div id="historyModal" class="card" style="display: none; margin-top:20px; border-color: var(--accent);">
+           <div style="display:flex; justify-content:space-between; align-items:center;">
+             <h3 style="margin:0;" id="historyTitle">Lịch sử</h3>
+             <button class="btn danger" style="padding: 4px 10px;" onclick="closeHistory()">Đóng</button>
+           </div>
+           <div style="margin-top: 10px;">
+             <table style="background: rgba(0,0,0,0.2);">
+               <thead>
+                 <tr>
+                   <th>Ngày Tiêm</th>
+                   <th>Phiếu</th>
+                   <th>Bác sĩ</th>
+                   <th>Chi tiết</th>
+                 </tr>
+               </thead>
+               <tbody id="modalBody"></tbody>
+             </table>
+           </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    initPage();
+    let allForms = [];
+    let customersData = []; // Unique customers combined
+
+    function showMsg(text, isError=false){
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      msg.textContent = text;
+      msg.className = "msg" + (isError ? " error" : " notice");
+    }
+
+    // Since there's no native customer API endpoint, we derive customers from forms
+    async function fetchCustomers(){
+      try {
+        allForms = await apiRequest("/api/vaccination-forms");
+        
+        // Group by customerName
+        const cmap = {};
+        for(let f of allForms) {
+          const cname = f.customerName || "Khách Vãng Lai";
+          if (!cmap[cname]) {
+            cmap[cname] = {
+              name: cname,
+              gender: f.gender || '',
+              birthDate: f.customerBirthDate || '',
+              forms: []
+            };
+          }
+          cmap[cname].forms.push(f);
+        }
+
+        customersData = Object.values(cmap);
+        
+        // Compute stats logic
+        for(let c of customersData) {
+           c.forms.sort((a,b) => new Date(b.vaccinationDate || 0) - new Date(a.vaccinationDate || 0));
+           c.lastVisit = c.forms.length > 0 ? c.forms[0].vaccinationDate : '';
+           c.visitCount = c.forms.length;
+        }
+
+        renderTable();
+        showMsg("Đã tải danh sách khách hàng.", false);
+      } catch (err) {
+        showMsg("Lỗi lấy dữ liệu: " + err.message, true);
+      }
+    }
+
+    function renderTable() {
+      const field = document.getElementById("searchField").value;
+      const kw = document.getElementById("keyword").value.toLowerCase().trim();
+      const body = document.getElementById("tBody");
+      body.innerHTML = "";
+
+      const filtered = customersData.filter(c => {
+         if (field === "all") {
+            return c.name.toLowerCase().includes(kw) || c.gender.toLowerCase().includes(kw) || c.birthDate.toLowerCase().includes(kw);
+         } else {
+            const val = c[field] ? String(c[field]).toLowerCase() : "";
+            return val.includes(kw);
+         }
+      });
+      
+      for(const c of filtered) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="font-weight:600;">${c.name}</td>
+          <td>${c.gender}</td>
+          <td>${c.birthDate}</td>
+          <td><span class="role-pill">${c.visitCount}</span></td>
+          <td>${c.lastVisit}</td>
+          <td>
+             <button class="btn primary" style="font-size: 0.8rem; padding: 6px 10px;" onclick="viewHistory('${encodeURIComponent(c.name)}')">Xem Lịch Sử</button>
+          </td>
+        `;
+        body.appendChild(tr);
+      }
+    }
+
+    function viewHistory(encName) {
+      const name = decodeURIComponent(encName);
+      const c = customersData.find(x => x.name === name);
+      if(!c) return;
+
+      document.getElementById("historyTitle").textContent = `Lịch sử tiêm của: ${name}`;
+      const mbody = document.getElementById("modalBody");
+      mbody.innerHTML = "";
+
+      for(const f of c.forms) {
+         const tr = document.createElement("tr");
+         tr.innerHTML = `
+           <td>${f.vaccinationDate || ""}</td>
+           <td>${f.vaccinationFormId}</td>
+           <td>${f.doctorName || ""}</td>
+           <td>
+              <button class="btn" style="padding: 4px 8px;" onclick="showVaccines('${f.vaccinationFormId}')">Vaccine</button>
+           </td>
+         `;
+         mbody.appendChild(tr);
+      }
+      
+      document.getElementById("historyModal").style.display = "block";
+    }
+
+    function closeHistory() {
+      document.getElementById("historyModal").style.display = "none";
+    }
+
+    async function showVaccines(formId){
+      try {
+        const vaccines = await apiRequest(`/api/vaccination-forms/${formId}/vaccines`);
+        const lines = vaccines.map(v => `${v.vaccineName} (Liều: ${v.dose})`).join("\\n");
+        alert(lines || "Không có dữ liệu vaccine");
+      } catch(err) {
+        alert("Lỗi: " + err.message);
+      }
+    }
+
+    fetchCustomers();
+  </script>
+</body>
+</html>

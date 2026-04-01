@@ -3,15 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quản lý tài khoản</title>
+  <title>Quản lý Hành Chính / Nhân Viên</title>
   <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Modal styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
+    }
+    .modal-content {
+      background-color: var(--surface);
+      margin: 10% auto; 
+      padding: 24px;
+      border: 1px solid var(--accent);
+      width: 90%; 
+      max-width: 500px;
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .close-btn {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-btn:hover,
+    .close-btn:focus {
+      color: #fff;
+      text-decoration: none;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="brand">
         <span class="brand-accent">Vaccination</span>
-        <span class="badge">Quản lý tài khoản</span>
+        <span class="badge">Nhân Viên</span>
       </div>
       <div class="topbar-actions">
         <span class="role-pill" id="headerRole" title="Vai trò">—</span>
@@ -24,6 +67,7 @@
       <aside class="sidebar">
         <div class="sidebar-role-banner" id="sidebarRoleBanner" aria-live="polite"></div>
         <div class="nav">
+          <a id="nav-customers" href="customers.html">Quản lý khách hàng</a>
           <a id="nav-vaccine" href="vaccines.html">Quản lý vaccine</a>
           <a id="nav-forms" href="vaccination-forms.html">Tạo phiếu tiêm</a>
           <a id="nav-payment" href="payment.html">Thanh toán</a>
@@ -35,18 +79,84 @@
 
       <main class="content">
         <div class="card">
-          <h2 style="margin:0 0 10px;">Quản lý tài khoản (placeholder)</h2>
-          <div class="hint" style="line-height:1.7;">
-            Sơ đồ mẫu có các thao tác: Xem / Thêm / Sửa / Xóa tài khoản.
-            Backend hiện tại chưa có endpoint CRUD tài khoản, nên trang này chủ yếu là giao diện khung.
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h2 style="margin:0;">Danh sách Nhân Viên & Tài khoản</h2>
+            <button class="btn primary" onclick="openModal()">+ Thêm Nhân Viên</button>
           </div>
-          <div id="note" class="msg" style="margin-top:12px;">
-            Nếu bạn muốn, mình sẽ thêm các endpoint:
-            <code>/api/accounts</code> (GET/POST) và <code>/api/accounts/{id}</code> (PUT/DELETE),
-            đồng thời tạo UI form tương ứng.
+          
+          <div class="row">
+            <div class="field" style="flex:1;min-width:260px;">
+              <input id="keyword" placeholder="Tra cứu username, email hoặc vai trò..." oninput="renderTable()" />
+            </div>
+          </div>
+
+          <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
+
+          <div style="margin-top:14px; overflow-x: auto;">
+            <table>
+              <thead>
+              <tr>
+                <th>Account ID</th>
+                <th>Username</th>
+                <th>Tên Hiển Thị / Nhân Viên ID</th>
+                <th>Vai Trò</th>
+                <th>Email</th>
+                <th style="text-align:right;">Hành Động</th>
+              </tr>
+              </thead>
+              <tbody id="tBody"></tbody>
+            </table>
           </div>
         </div>
       </main>
+    </div>
+  </div>
+
+  <!-- Thêm / Sửa Nhân Viên Modal -->
+  <div id="accountModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h2 id="modalTitle" style="margin-top:0;">Thêm Tài Khoản</h2>
+      
+      <form id="accountForm" onsubmit="saveAccount(event)">
+        <input type="hidden" id="acctId" />
+        
+        <div class="field" style="margin-bottom:12px;">
+          <label for="acctUsername">Tên đăng nhập (Username)</label>
+          <input id="acctUsername" required placeholder="VD: bacsi_nguyenvanA" />
+        </div>
+        
+        <div class="field" style="margin-bottom:12px;" id="passwordField">
+          <label for="acctPassword">Mật khẩu</label>
+          <input id="acctPassword" type="password" placeholder="Mật khẩu (mặc định cho lần đầu)" />
+        </div>
+
+        <div class="field" style="margin-bottom:12px;">
+          <label for="acctName">Tên Nhân Viên</label>
+          <input id="acctName" placeholder="Họ và tên hoặc bí danh" required />
+        </div>
+        
+        <div class="field" style="margin-bottom:12px;">
+          <label for="acctEmail">Email liên hệ</label>
+          <input id="acctEmail" type="email" placeholder="VD: nguyenvan@gmail.com" />
+        </div>
+
+        <div class="field" style="margin-bottom:12px;">
+          <label for="acctRole">Phân Quyền Vai Trò</label>
+          <select id="acctRole" required>
+            <option value="DOCTOR">Bác sĩ (Khám, Tiêm)</option>
+            <option value="CASHIER">Thu ngân</option>
+            <option value="INVENTORY_MANAGER">Quản kho</option>
+            <option value="ADMINISTRATOR">Quản trị viên (Admin)</option>
+          </select>
+          <p class="hint" style="margin-top:6px;font-size:0.8rem;">Mã nhân viên (VD: BS002, TN005) sẽ được sinh tự động bởi hệ thống dựa theo role.</p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          <button type="submit" class="btn primary">Lưu Tài Khoản</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -54,7 +164,126 @@
   <script src="assets/js/app.js"></script>
   <script>
     initPage();
+    let allAccounts = [];
+
+    function showMsg(text, isError=false){
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      msg.textContent = text;
+      msg.className = "msg" + (isError ? " error" : " notice");
+    }
+
+    async function fetchAccounts(){
+      try {
+        allAccounts = await apiRequest("/api/accounts");
+        renderTable();
+      } catch (err) {
+        showMsg("Lỗi khi tải danh sách: " + err.message, true);
+      }
+    }
+
+    function renderTable() {
+      const kw = document.getElementById("keyword").value.toLowerCase().trim();
+      const body = document.getElementById("tBody");
+      body.innerHTML = "";
+      
+      const filtered = allAccounts.filter(a => {
+        const str = (a.username + " " + a.email + " " + a.authority).toLowerCase();
+        return str.includes(kw);
+      });
+
+      for(const a of filtered) {
+        let badgeClass = "badge";
+        let roleName = a.authority || "";
+        if(roleName.includes("ADMIN")) { roleName = "Admin"; badgeClass = "role-pill"; }
+        else if(roleName.includes("DOCTOR")) roleName = "Bác Sĩ";
+        else if(roleName.includes("CASHIER")) roleName = "Thu Ngân";
+        else if(roleName.includes("INVENTORY")) roleName = "Quản Kho";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.accountId || ""}</td>
+          <td style="font-weight:bold;">${a.username || ""}</td>
+          <td>${a.employeeName || a.employeeId || "Không có"}</td>
+          <td><span class="${badgeClass}">${roleName}</span></td>
+          <td>${a.email || ""}</td>
+          <td style="text-align:right;">
+             <button class="btn" style="padding:4px 8px;font-size:0.85rem;margin-right:4px;" onclick='openEditModal(${JSON.stringify(a)})'>Sửa</button>
+             <button class="btn" style="padding:4px 8px;font-size:0.85rem;" onclick="deleteAccount('${a.accountId}')">Xóa</button>
+          </td>
+        `;
+        body.appendChild(tr);
+      }
+    }
+
+    /* Modal Logic */
+    function openModal() {
+      document.getElementById("modalTitle").textContent = "Thêm Tài Khoản (Phiên Bản Mới)";
+      document.getElementById("accountForm").reset();
+      document.getElementById("acctId").value = "";
+      document.getElementById("acctUsername").disabled = false;
+      document.getElementById("acctRole").disabled = false;
+      document.getElementById("passwordField").style.display = "block";
+      document.getElementById("accountModal").style.display = "block";
+    }
+
+    function openEditModal(a) {
+      document.getElementById("modalTitle").textContent = "Sửa Thông Tin Tài Khoản";
+      document.getElementById("acctId").value = a.accountId;
+      document.getElementById("acctUsername").value = a.username;
+      document.getElementById("acctUsername").disabled = true;
+      document.getElementById("acctName").value = a.employeeName;
+      document.getElementById("acctEmail").value = a.email;
+      document.getElementById("acctRole").value = a.authority;
+      document.getElementById("acctRole").disabled = true;
+      document.getElementById("passwordField").style.display = "none";
+      document.getElementById("accountModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("accountModal").style.display = "none";
+    }
+
+    async function saveAccount(e) {
+      e.preventDefault();
+      const accountId = document.getElementById("acctId").value;
+      const payload = {
+         username: document.getElementById("acctUsername").value.trim(),
+         password: document.getElementById("acctPassword").value,
+         name: document.getElementById("acctName").value.trim(),
+         email: document.getElementById("acctEmail").value.trim(),
+         authority: document.getElementById("acctRole").value
+      };
+
+      try {
+         if (accountId) {
+            // Edit mode
+            await apiRequest("/api/accounts/" + accountId, { method: "PUT", body: payload });
+            showMsg("Cập nhật thành công!", false);
+         } else {
+            // Create mode
+            await apiRequest("/api/accounts", { method: "POST", body: payload });
+            showMsg("Tạo tài khoản thành công!", false);
+         }
+         closeModal();
+         fetchAccounts();
+      } catch (err) {
+         showMsg("Lỗi khi lưu: " + err.message, true);
+      }
+    }
+
+    async function deleteAccount(id) {
+      if(!confirm("Bạn có chắc chắn muốn xóa tài khoản này? Sẽ xóa toàn bộ dữ liệu Nhân Viên liên kết!")) return;
+      try {
+        await apiRequest("/api/accounts/" + id, { method: "DELETE" });
+        showMsg("Đã xóa tài khoản ID: " + id, false);
+        fetchAccounts();
+      } catch(err) {
+        showMsg("Không thể xóa: " + err.message, true);
+      }
+    }
+
+    fetchAccounts();
   </script>
 </body>
 </html>
-

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khách hàng - Tra cứu</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0b1220 0%, #1a1d27 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .portal-container {
+      max-width: 800px;
+      width: 100%;
+    }
+    .search-card {
+      background: rgba(42, 48, 60, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .portal-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .portal-header h2 {
+      font-size: 2rem;
+      color: #eef2ff;
+      margin: 0;
+    }
+    .portal-header p {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .search-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .search-field {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .search-field label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .search-field input {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: rgba(0, 0, 0, 0.2);
+      font-size: 1rem;
+      color: #fff;
+    }
+    .search-field input:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+    }
+    .result-section {
+      margin-top: 24px;
+      display: none;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .nav-tabs button {
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      padding: 8px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-tabs button:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-tabs button.active {
+      background: var(--accent-dim);
+      color: var(--accent-hover);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-container">
+    <div style="margin-bottom: 20px;">
+      <a href="index.html" class="btn" style="display:inline-flex; align-items:center; gap:8px;">&larr; Quay lại trang chủ</a>
+    </div>
+
+    <div class="search-card">
+      <div class="portal-header">
+        <h2>Cổng Thông Tin Khách Hàng</h2>
+        <p>Tra cứu lịch sử tiêm chủng và thông tin vaccine của bạn</p>
+      </div>
+
+      <div class="nav-tabs">
+        <button id="tab-id" class="active" onclick="switchTab('id')">Tra cứu theo Mã Khách Hàng</button>
+        <button id="tab-name" onclick="switchTab('name')">Tra cứu theo Tên / SĐT</button>
+      </div>
+
+      <div class="search-row" id="searchBox-id">
+        <div class="search-field">
+          <label for="searchId">Mã Khách Hàng</label>
+          <input id="searchId" type="text" placeholder="VD: KH0001" onkeydown="if(event.key==='Enter') doSearch('id')">
+        </div>
+        <div style="align-self: flex-end;">
+          <button class="btn primary" style="padding: 12px 24px; font-size: 1rem;" onclick="doSearch('id')">Tra Cứu</button>
+        </div>
+      </div>
+
+      <div class="search-row" id="searchBox-name" style="display: none;">
+        <div class="search-field">
+          <label for="searchName">Họ và Tên / SĐT</label>
+          <input id="searchName" type="text" placeholder="Nhập tên khách hàng" onkeydown="if(event.key==='Enter') doSearch('name')">
+        </div>
+        <div style="align-self: flex-end;">
+          <button class="btn primary" style="padding: 12px 24px; font-size: 1rem;" onclick="doSearch('name')">Tra Cứu</button>
+        </div>
+      </div>
+
+      <div id="msg" class="msg" style="display:none;"></div>
+
+      <div id="resultSection" class="result-section">
+        <h3 style="margin-top:0; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;" id="resultTitle">Lịch sử tiêm</h3>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã Lần Tiêm</th>
+                <th>Ngày Tiêm</th>
+                <th>Bác sĩ</th>
+                <th>Chi Tiết</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    let activeTab = 'id';
+    
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('tab-id').classList.remove('active');
+      document.getElementById('tab-name').classList.remove('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+      
+      document.getElementById('searchBox-id').style.display = tab === 'id' ? 'flex' : 'none';
+      document.getElementById('searchBox-name').style.display = tab === 'name' ? 'flex' : 'none';
+      
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('msg').style.display = 'none';
+    }
+
+    function showMsg(text, isError=false){
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      msg.textContent = text;
+      msg.className = "msg" + (isError ? " error" : " notice");
+    }
+
+    async function doSearch(type) {
+      const val = document.getElementById(type === 'id' ? 'searchId' : 'searchName').value.trim().toLowerCase();
+      if (!val) {
+        return showMsg("Vui lòng nhập thông tin tìm kiếm", true);
+      }
+      
+      showMsg("Đang tìm kiếm...", false);
+      try {
+        // Since we lack a direct customer API, fetch all vaccination forms and filter
+        const forms = await apiRequest("/api/vaccination-forms");
+        
+        let matches = [];
+        if (type === 'id') {
+          // Assuming the forms don't expose customerId directly we might map via another endpoint, 
+          // but we can filter by exact string match if customerName resembles ID, or fall back to filtering via name field if needed.
+          // For now, let's just do a broad check
+          matches = forms.filter(f => (f.customerName && String(f.customerName).toLowerCase().includes(val)) || (f.customerId && String(f.customerId).toLowerCase() === val));
+        } else {
+          matches = forms.filter(f => f.customerName && String(f.customerName).toLowerCase().includes(val));
+        }
+
+        if (matches.length === 0) {
+          document.getElementById('resultSection').style.display = 'none';
+          return showMsg("Không tìm thấy dữ liệu cho khách hàng này.", true);
+        }
+
+        // Render results
+        const body = document.getElementById("resultBody");
+        body.innerHTML = "";
+        
+        // Sort by date descending
+        matches.sort((a, b) => new Date(b.vaccinationDate || 0) - new Date(a.vaccinationDate || 0));
+
+        for (const f of matches) {
+           const tr = document.createElement("tr");
+           tr.innerHTML = `
+             <td>${f.vaccinationFormId}</td>
+             <td><span style="color:var(--link); font-weight:600;">${f.vaccinationDate ?? "N/A"}</span></td>
+             <td>${f.doctorName ?? "N/A"}</td>
+             <td><button class="btn" type="button" onclick="showVaccines('${f.vaccinationFormId}')">Xem Vaccine</button></td>
+           `;
+           body.appendChild(tr);
+        }
+
+        document.getElementById('resultTitle').textContent = `Lịch sử tiêm: ${matches[0].customerName || ""}`;
+        document.getElementById('msg').style.display = 'none';
+        document.getElementById('resultSection').style.display = 'block';
+
+      } catch (err) {
+        showMsg("Lỗi khi kết nối đến máy chủ: " + err.message, true);
+      }
+    }
+
+    async function showVaccines(formId) {
+      try {
+        const vaccines = await apiRequest(`/api/vaccination-forms/${formId}/vaccines`);
+        if (!vaccines || vaccines.length === 0) {
+          alert('Không có dữ liệu chi tiết cho phiếu này.');
+          return;
+        }
+        const lines = vaccines.map(v => `• ${v.vaccineName} (Liều: ${v.dose}, Giá: ${v.price})`).join("\n");
+        alert(`Chi tiết Vaccine:\n\n${lines}`);
+      } catch (err) {
+        alert("Lỗi khi tải chi tiết: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

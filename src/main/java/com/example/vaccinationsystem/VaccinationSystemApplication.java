@@ -1,8 +1,9 @@
 package com.example.vaccinationsystem;
 
-import com.example.vaccinationsystem.util.DotenvLoader;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.example.vaccinationsystem.util.DotenvLoader;
 
 @SpringBootApplication
 public class VaccinationSystemApplication {
