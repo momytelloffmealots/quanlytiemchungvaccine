@@ -64,8 +64,20 @@ public class AccountDao {
     public List<AccountInfoDTO> findAllWithDetails() {
         String sql = """
                 SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
-                       COALESCE(d.DOCTOR_ID, c.CASHIER_ID, i.INVENTORY_MANAGER_ID, m.ADMINISTRATOR_ID) as EMP_ID,
-                       COALESCE(d.NAME, c.NAME, i.NAME, m.NAME) as EMP_NAME
+                       CASE a.AUTHORITY
+                         WHEN 'DOCTOR' THEN d.DOCTOR_ID
+                         WHEN 'CASHIER' THEN c.CASHIER_ID
+                         WHEN 'INVENTORY_MANAGER' THEN i.INVENTORY_MANAGER_ID
+                         WHEN 'ADMINISTRATOR' THEN m.ADMINISTRATOR_ID
+                         ELSE NULL
+                       END as EMP_ID,
+                       CASE a.AUTHORITY
+                         WHEN 'DOCTOR' THEN d.NAME
+                         WHEN 'CASHIER' THEN c.NAME
+                         WHEN 'INVENTORY_MANAGER' THEN i.NAME
+                         WHEN 'ADMINISTRATOR' THEN m.NAME
+                         ELSE NULL
+                       END as EMP_NAME
                 FROM ACCOUNT a
                 LEFT JOIN DOCTOR d ON a.ACCOUNT_ID = d.ACCOUNT_ID
                 LEFT JOIN CASHIER c ON a.ACCOUNT_ID = c.ACCOUNT_ID
@@ -137,6 +149,24 @@ public class AccountDao {
         jdbcTemplate.update(sql, accountId);
     }
 
+    public boolean isDoctorUsed(String id) {
+        String sql = "SELECT 1 FROM VACCINATION_FORM WHERE DOCTOR_ID = ? LIMIT 1";
+        return !jdbcTemplate.queryForList(sql, Integer.class, id).isEmpty();
+    }
+
+    public boolean isCashierUsed(String id) {
+        String sqlVf = "SELECT 1 FROM VACCINATION_FORM WHERE CASHIER_ID = ? LIMIT 1";
+        String sqlBill = "SELECT 1 FROM BILL WHERE CASHIER_ID = ? LIMIT 1";
+        boolean inVf = !jdbcTemplate.queryForList(sqlVf, Integer.class, id).isEmpty();
+        boolean inBill = !jdbcTemplate.queryForList(sqlBill, Integer.class, id).isEmpty();
+        return inVf || inBill;
+    }
+
+    public boolean isInventoryManagerUsed(String id) {
+        String sql = "SELECT 1 FROM VACCINE WHERE INVENTORY_MANAGER_ID = ? LIMIT 1";
+        return !jdbcTemplate.queryForList(sql, Integer.class, id).isEmpty();
+    }
+
     public void nullifyEmployeeReferences(String accountId) {
         // 1. Get role IDs first
         Optional<String> docId = findDoctorIdByAccountId(accountId);
@@ -184,8 +214,20 @@ public class AccountDao {
     public List<AccountInfoDTO> searchStaff(String role, String keyword) {
         StringBuilder sql = new StringBuilder("""
                 SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
-                       COALESCE(d.DOCTOR_ID, c.CASHIER_ID, i.INVENTORY_MANAGER_ID, m.ADMINISTRATOR_ID) as EMP_ID,
-                       COALESCE(d.NAME, c.NAME, i.NAME, m.NAME) as EMP_NAME
+                       CASE a.AUTHORITY
+                         WHEN 'DOCTOR' THEN d.DOCTOR_ID
+                         WHEN 'CASHIER' THEN c.CASHIER_ID
+                         WHEN 'INVENTORY_MANAGER' THEN i.INVENTORY_MANAGER_ID
+                         WHEN 'ADMINISTRATOR' THEN m.ADMINISTRATOR_ID
+                         ELSE NULL
+                       END as EMP_ID,
+                       CASE a.AUTHORITY
+                         WHEN 'DOCTOR' THEN d.NAME
+                         WHEN 'CASHIER' THEN c.NAME
+                         WHEN 'INVENTORY_MANAGER' THEN i.NAME
+                         WHEN 'ADMINISTRATOR' THEN m.NAME
+                         ELSE NULL
+                       END as EMP_NAME
                 FROM ACCOUNT a
                 LEFT JOIN DOCTOR d ON a.ACCOUNT_ID = d.ACCOUNT_ID
                 LEFT JOIN CASHIER c ON a.ACCOUNT_ID = c.ACCOUNT_ID

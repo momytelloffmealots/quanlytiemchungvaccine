@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AccountService {
@@ -69,16 +70,22 @@ public class AccountService {
         if (newRole != null && !newRole.equals(oldRole)) {
             // ROLE CHANGED: Migrate between tables
             
-            // 1. Nullify references before deleting old role row to avoid FK errors
+            // 1. Try to nullify references first (best effort)
             accountDao.nullifyEmployeeReferences(id);
             
-            // 2. Delete from old table
+            // 2. Check if old role table record is STILL referenced (if nullification failed or not allowed)
             String oldTable = getTableName(oldRole);
+            boolean canDelete = true;
             if (!oldTable.isEmpty()) {
+                canDelete = !isRoleUsed(oldTable, id);
+            }
+
+            // 3. Delete from old table ONLY if not referenced elsewhere (prevents FK error)
+            if (canDelete && !oldTable.isEmpty()) {
                 accountDao.deleteFromRoleTable(oldTable, id);
             }
 
-            // Insert into new table
+            // 4. Insert into new role table
             String newTable = getTableName(newRole);
             String idCol = getIdColumn(newRole);
             String prefix = getPrefix(newRole);
@@ -88,7 +95,7 @@ public class AccountService {
 
             accountDao.insertEmployeeRow(newTable, idCol, newEmpId, id, request.getName());
             
-            // Update AUTHORITY in ACCOUNT table
+            // 5. Update AUTHORITY in ACCOUNT table
             accountDao.updateAuthority(id, newRole);
         } else {
             // ROLE UNCHANGED: Just update name in the existing table
@@ -97,6 +104,22 @@ public class AccountService {
                 accountDao.updateEmployeeName(table, id, request.getName());
             }
         }
+    }
+
+    private boolean isRoleUsed(String table, String accountId) {
+        if (table.equals("DOCTOR")) {
+            Optional<String> docId = accountDao.findDoctorIdByAccountId(accountId);
+            return docId.isPresent() && accountDao.isDoctorUsed(docId.get());
+        }
+        if (table.equals("CASHIER")) {
+            Optional<String> cashId = accountDao.findCashierIdByAccountId(accountId);
+            return cashId.isPresent() && accountDao.isCashierUsed(cashId.get());
+        }
+        if (table.equals("INVENTORY_MANAGER")) {
+            Optional<String> invId = accountDao.findInventoryManagerIdByAccountId(accountId);
+            return invId.isPresent() && accountDao.isInventoryManagerUsed(invId.get());
+        }
+        return false;
     }
 
     private String getTableName(String role) {
