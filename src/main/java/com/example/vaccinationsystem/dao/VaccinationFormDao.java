@@ -98,8 +98,8 @@ public class VaccinationFormDao {
                     f.VACCINATION_DATE
                 FROM VACCINATION_FORM f
                 JOIN CUSTOMER c ON c.CUSTOMER_ID = f.CUSTOMER_ID
-                JOIN DOCTOR d ON d.DOCTOR_ID = f.DOCTOR_ID
-                JOIN CASHIER cash ON cash.CASHIER_ID = f.CASHIER_ID
+                LEFT JOIN DOCTOR d ON d.DOCTOR_ID = f.DOCTOR_ID
+                LEFT JOIN CASHIER cash ON cash.CASHIER_ID = f.CASHIER_ID
                 ORDER BY f.VACCINATION_FORM_ID DESC
                 """;
 
@@ -178,8 +178,8 @@ public class VaccinationFormDao {
                     d.NAME AS DOCTOR_NAME, cash.NAME AS CASHIER_NAME, f.VACCINATION_DATE
                 FROM VACCINATION_FORM f
                 JOIN CUSTOMER c ON c.CUSTOMER_ID = f.CUSTOMER_ID
-                JOIN DOCTOR d ON d.DOCTOR_ID = f.DOCTOR_ID
-                JOIN CASHIER cash ON cash.CASHIER_ID = f.CASHIER_ID
+                LEFT JOIN DOCTOR d ON d.DOCTOR_ID = f.DOCTOR_ID
+                LEFT JOIN CASHIER cash ON cash.CASHIER_ID = f.CASHIER_ID
                 """);
         
         if (retentionDate != null) {

@@ -93,23 +93,17 @@
             </div>
           </div>
 
-          <!-- Advanced Filter Row -->
+          <!-- Advanced Filter Row (Simplified) -->
           <div id="advancedFilterRow" class="row" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:10px; flex-wrap: wrap; gap: 15px;">
             <div class="field" style="min-width:140px;">
-              <label>Địa chỉ</label>
-              <input id="advAddress" placeholder="VD: Nghệ An, HCM" />
-            </div>
-            <div class="field" style="min-width:120px;">
-              <label>Năm sinh</label>
-              <input id="advBirthYear" type="number" placeholder="2001" />
-            </div>
-            <div class="field" style="min-width:140px;">
-              <label>Bằng cấp (Bác sĩ)</label>
-              <input id="advCert" placeholder="VD: Đại học" />
-            </div>
-            <div class="field" style="min-width:140px;">
-              <label>Lô vaccine nhập (Quản kho)</label>
-              <input id="advLot" placeholder="VD: 27" />
+              <label>Lọc theo Vai Trò</label>
+              <select id="advRole">
+                <option value="">Tất cả</option>
+                <option value="DOCTOR">Bác sĩ</option>
+                <option value="CASHIER">Thu ngân</option>
+                <option value="INVENTORY_MANAGER">Quản kho</option>
+                <option value="ADMINISTRATOR">Quản trị viên</option>
+              </select>
             </div>
             <div style="align-self:flex-end;">
               <button class="btn primary" onclick="searchStaff()">Áp dụng lọc</button>
@@ -252,21 +246,17 @@
     }
 
     async function searchStaff() {
-      const address = document.getElementById("advAddress").value.trim();
-      const birthYear = document.getElementById("advBirthYear").value;
-      const cert = document.getElementById("advCert").value.trim();
-      const lot = document.getElementById("advLot").value.trim();
+      const role = document.getElementById("advRole").value;
+      const kw = document.getElementById("keyword").value.trim();
       
       let url = `/api/accounts/search?`;
-      if (address) url += `address=${encodeURIComponent(address)}&`;
-      if (birthYear) url += `birthYear=${birthYear}&`;
-      if (cert) url += `certificate=${encodeURIComponent(cert)}&`;
-      if (lot) url += `lotNumber=${encodeURIComponent(lot)}&`;
+      if (role) url += `role=${encodeURIComponent(role)}&`;
+      if (kw) url += `keyword=${encodeURIComponent(kw)}&`;
 
       try {
         allAccounts = await apiRequest(url);
         renderTable();
-        showMsg(`Đã lọc được ${allAccounts.length} nhân sự phù hợp.`);
+        showMsg(`Đã lọc được ${allAccounts.length} kết quả.`);
       } catch (err) {
         showMsg("Lỗi khi lọc: " + err.message, true);
       }
@@ -274,7 +264,7 @@
 
     /* Modal Logic */
     function openModal() {
-      document.getElementById("modalTitle").textContent = "Thêm Tài Khoản (Phiên Bản Mới)";
+      document.getElementById("modalTitle").textContent = "Thêm Tài Khoản";
       document.getElementById("accountForm").reset();
       document.getElementById("acctId").value = "";
       document.getElementById("acctUsername").disabled = false;
@@ -293,8 +283,8 @@
       document.getElementById("acctName").value = a.employeeName;
       document.getElementById("acctEmail").value = a.email;
       document.getElementById("acctRole").value = a.authority;
-      document.getElementById("acctRole").disabled = true;
-      document.getElementById("passwordField").style.display = "none";
+      document.getElementById("acctRole").disabled = false; 
+      document.getElementById("passwordField").style.display = "block";
       document.getElementById("accountModal").style.display = "block";
     }
 

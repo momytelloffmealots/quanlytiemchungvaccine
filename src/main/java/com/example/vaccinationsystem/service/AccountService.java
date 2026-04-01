@@ -53,26 +53,85 @@ public class AccountService {
 
     @Transactional
     public void updateAccount(String id, AccountCreateRequest request) {
+        // 1. Get current account info to check for role change
+        List<AccountInfoDTO> all = accountDao.findAllWithDetails();
+        AccountInfoDTO current = all.stream()
+                .filter(a -> a.getAccountId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Account not found: " + id));
+
+        String oldRole = current.getAuthority();
+        String newRole = request.getAuthority();
+
+        // 2. Update Email in ACCOUNT table
         accountDao.updateAccount(id, request.getEmail());
-        
-        String table = switch (request.getAuthority()) {
+
+        if (newRole != null && !newRole.equals(oldRole)) {
+            // ROLE CHANGED: Migrate between tables
+            
+            // Delete from old table
+            String oldTable = getTableName(oldRole);
+            if (!oldTable.isEmpty()) {
+                accountDao.deleteFromRoleTable(oldTable, id);
+            }
+
+            // Insert into new table
+            String newTable = getTableName(newRole);
+            String idCol = getIdColumn(newRole);
+            String prefix = getPrefix(newRole);
+
+            String lastEmpId = accountDao.getLatestEmployeeId(newTable, idCol);
+            String newEmpId = generateNextId(lastEmpId, prefix);
+
+            accountDao.insertEmployeeRow(newTable, idCol, newEmpId, id, request.getName());
+            
+            // Update AUTHORITY in ACCOUNT table
+            accountDao.updateAuthority(id, newRole);
+        } else {
+            // ROLE UNCHANGED: Just update name in the existing table
+            String table = getTableName(oldRole);
+            if (!table.isEmpty()) {
+                accountDao.updateEmployeeName(table, id, request.getName());
+            }
+        }
+    }
+
+    private String getTableName(String role) {
+        return switch (role) {
             case "DOCTOR" -> "DOCTOR";
             case "CASHIER" -> "CASHIER";
             case "INVENTORY_MANAGER" -> "INVENTORY_MANAGER";
             case "ADMINISTRATOR" -> "ADMINISTRATOR";
             default -> "";
         };
-        if (!table.isEmpty()) {
-            accountDao.updateEmployeeName(table, id, request.getName());
-        }
+    }
+
+    private String getIdColumn(String role) {
+        return switch (role) {
+            case "DOCTOR" -> "DOCTOR_ID";
+            case "CASHIER" -> "CASHIER_ID";
+            case "INVENTORY_MANAGER" -> "INVENTORY_MANAGER_ID";
+            case "ADMINISTRATOR" -> "ADMINISTRATOR_ID";
+            default -> "EMPLOYEE_ID";
+        };
+    }
+
+    private String getPrefix(String role) {
+        return switch (role) {
+            case "DOCTOR" -> "BS";
+            case "CASHIER" -> "TN";
+            case "INVENTORY_MANAGER" -> "QK";
+            case "ADMINISTRATOR" -> "QT";
+            default -> "EM";
+        };
     }
 
     public void deleteAccount(String id) {
         accountDao.deleteAccountCascade(id);
     }
 
-    public List<AccountInfoDTO> searchStaff(String role, String address, Integer birthYear, String certificate, String lotNumber) {
-        return accountDao.searchStaff(role, address, birthYear, certificate, lotNumber);
+    public List<AccountInfoDTO> searchStaff(String role, String keyword) {
+        return accountDao.searchStaff(role, keyword);
     }
 
     private String generateNextId(String currentId, String prefix) {

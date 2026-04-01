@@ -39,10 +39,7 @@ public class AccountController {
     @GetMapping("/search")
     public List<AccountInfoDTO> searchStaff(
             @RequestParam(value = "role", required = false) String role,
-            @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "birthYear", required = false) Integer birthYear,
-            @RequestParam(value = "certificate", required = false) String certificate,
-            @RequestParam(value = "lotNumber", required = false) String lotNumber) {
-        return accountService.searchStaff(role, address, birthYear, certificate, lotNumber);
+            @RequestParam(value = "keyword", required = false) String keyword) {
+        return accountService.searchStaff(role, keyword);
     }
 }

@@ -120,23 +120,44 @@ public class AccountDao {
         jdbcTemplate.update("UPDATE ACCOUNT SET EMAIL = ? WHERE ACCOUNT_ID = ?", email, id);
     }
 
+    public void updateAuthority(String id, String authority) {
+        jdbcTemplate.update("UPDATE ACCOUNT SET AUTHORITY = ? WHERE ACCOUNT_ID = ?", authority, id);
+    }
+
     public void updateEmployeeName(String table, String accountId, String name) {
         String sql = "UPDATE " + table + " SET NAME = ? WHERE ACCOUNT_ID = ?";
         jdbcTemplate.update(sql, name, accountId);
     }
 
+    public void deleteFromRoleTable(String table, String accountId) {
+        String sql = "DELETE FROM " + table + " WHERE ACCOUNT_ID = ?";
+        jdbcTemplate.update(sql, accountId);
+    }
+
     @Transactional
     public void deleteAccountCascade(String accountId) {
-        // Delete from role tables first
+        // 1. Get role IDs first
+        Optional<String> docId = findDoctorIdByAccountId(accountId);
+        Optional<String> cashId = findCashierIdByAccountId(accountId);
+
+        // 2. Nullify references in Vaccination Form & Bill to avoid FK errors
+        docId.ifPresent(id -> jdbcTemplate.update("UPDATE VACCINATION_FORM SET DOCTOR_ID = NULL WHERE DOCTOR_ID = ?", id));
+        cashId.ifPresent(id -> {
+            jdbcTemplate.update("UPDATE VACCINATION_FORM SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
+            jdbcTemplate.update("UPDATE BILL SET CASHIER_ID = NULL WHERE CASHIER_ID = ?", id);
+        });
+
+        // 3. Delete from role tables
         jdbcTemplate.update("DELETE FROM DOCTOR WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM CASHIER WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM INVENTORY_MANAGER WHERE ACCOUNT_ID = ?", accountId);
         jdbcTemplate.update("DELETE FROM ADMINISTRATOR WHERE ACCOUNT_ID = ?", accountId);
-        // Finally delete account
+        
+        // 4. Finally delete account
         jdbcTemplate.update("DELETE FROM ACCOUNT WHERE ACCOUNT_ID = ?", accountId);
     }
 
-    public List<AccountInfoDTO> searchStaff(String role, String address, Integer birthYear, String certificate, String lotNumber) {
+    public List<AccountInfoDTO> searchStaff(String role, String keyword) {
         StringBuilder sql = new StringBuilder("""
                 SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
                        COALESCE(d.DOCTOR_ID, c.CASHIER_ID, i.INVENTORY_MANAGER_ID, m.ADMINISTRATOR_ID) as EMP_ID,
@@ -146,36 +167,18 @@ public class AccountDao {
                 LEFT JOIN CASHIER c ON a.ACCOUNT_ID = c.ACCOUNT_ID
                 LEFT JOIN INVENTORY_MANAGER i ON a.ACCOUNT_ID = i.ACCOUNT_ID
                 LEFT JOIN ADMINISTRATOR m ON a.ACCOUNT_ID = m.ACCOUNT_ID
+                WHERE 1=1
                 """);
-        
-        if (lotNumber != null && !lotNumber.isEmpty()) {
-            sql.append(" LEFT JOIN VACCINE v ON (i.INVENTORY_MANAGER_ID = v.INVENTORY_MANAGER_ID)");
-        }
-
-        sql.append(" WHERE 1=1");
         java.util.ArrayList<Object> params = new java.util.ArrayList<>();
 
         if (role != null && !role.isEmpty()) {
             sql.append(" AND a.AUTHORITY = ?");
             params.add(role);
         }
-        if (address != null && !address.isEmpty()) {
-            sql.append(" AND (d.ADDRESS LIKE ? OR c.ADDRESS LIKE ?)");
-            params.add("%" + address + "%");
-            params.add("%" + address + "%");
-        }
-        if (birthYear != null) {
-            sql.append(" AND (YEAR(d.DATE_OF_BIRTH) = ? OR YEAR(c.DATE_OF_BIRTH) = ?)");
-            params.add(birthYear);
-            params.add(birthYear);
-        }
-        if (certificate != null && !certificate.isEmpty()) {
-            sql.append(" AND d.CERTIFICATE LIKE ?");
-            params.add("%" + certificate + "%");
-        }
-        if (lotNumber != null && !lotNumber.isEmpty()) {
-            sql.append(" AND v.VACCINE_LOT = ?");
-            params.add(lotNumber);
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append(" AND (a.USERNAME LIKE ? OR COALESCE(d.NAME, c.NAME, i.NAME, m.NAME) LIKE ?)");
+            params.add("%" + keyword + "%");
+            params.add("%" + keyword + "%");
         }
 
         sql.append(" ORDER BY a.ACCOUNT_ID DESC");
