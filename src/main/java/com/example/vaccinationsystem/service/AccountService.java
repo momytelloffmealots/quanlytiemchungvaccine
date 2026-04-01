@@ -71,6 +71,10 @@ public class AccountService {
         accountDao.deleteAccountCascade(id);
     }
 
+    public List<AccountInfoDTO> searchStaff(String role, String address, Integer birthYear, String certificate, String lotNumber) {
+        return accountDao.searchStaff(role, address, birthYear, certificate, lotNumber);
+    }
+
     private String generateNextId(String currentId, String prefix) {
         // currentId format: PRE001
         String numericPart = currentId.substring(prefix.length());

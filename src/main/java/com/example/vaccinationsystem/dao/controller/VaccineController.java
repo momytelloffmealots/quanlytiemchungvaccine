@@ -48,5 +48,14 @@ public class VaccineController {
                                                               @RequestParam("days") int days) {
         return vaccineService.searchVaccineExpiring(keyword, days);
     }
+    @GetMapping("/vaccines/search-advanced")
+    public List<com.example.vaccinationsystem.dto.VaccineDTO> searchAdvanced(
+            @RequestParam(value = "typeName", required = false) String typeName,
+            @RequestParam(value = "maxQuantity", required = false) Integer maxQuantity,
+            @RequestParam(value = "lot", required = false) String lot,
+            @RequestParam(value = "startDate", required = false) java.time.LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) java.time.LocalDate endDate) {
+        return vaccineService.searchAdvanced(typeName, maxQuantity, lot, startDate, endDate);
+    }
 }
 

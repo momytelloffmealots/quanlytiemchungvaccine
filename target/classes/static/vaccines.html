@@ -61,6 +61,30 @@
               <button class="btn primary" onclick="loadAll()">Tải tất cả</button>
               <button class="btn primary" onclick="searchAll()">Tìm kiếm vaccine</button>
               <button class="btn primary" onclick="loadExpiring()">Sắp hết hạn</button>
+              <button class="btn" onclick="toggleAdvancedSearch()">Bộ lọc nâng cao</button>
+            </div>
+          </div>
+
+          <!-- Advanced Filter Row (Hidden by default) -->
+          <div id="advancedFilterRow" class="row" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+            <div class="field" style="min-width:120px;">
+              <label for="advLot">Số lô</label>
+              <input id="advLot" placeholder="VD: 18, 25" />
+            </div>
+            <div class="field" style="min-width:120px;">
+              <label for="advMaxQty">SL nhỏ hơn</label>
+              <input id="advMaxQty" type="number" placeholder="VD: 100" />
+            </div>
+            <div class="field" style="min-width:140px;">
+              <label for="advProdStart">SX từ ngày</label>
+              <input id="advProdStart" type="date" />
+            </div>
+            <div class="field" style="min-width:140px;">
+              <label for="advProdEnd">Đến ngày</label>
+              <input id="advProdEnd" type="date" />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="searchAdvanced()">Áp dụng lọc</button>
             </div>
           </div>
 
@@ -173,6 +197,36 @@
         renderRows(payload, { showDaysLeft:true });
         showMsg("Tải dữ liệu sắp hết hạn thành công.");
       }catch(err){
+        showMsg(err.message, true);
+      }
+    }
+
+    function toggleAdvancedSearch() {
+      const row = document.getElementById("advancedFilterRow");
+      row.style.display = row.style.display === "none" ? "flex" : "none";
+    }
+
+    async function searchAdvanced() {
+      const lot = document.getElementById("advLot").value.trim();
+      const maxQty = document.getElementById("advMaxQty").value;
+      const start = document.getElementById("advProdStart").value;
+      const end = document.getElementById("advProdEnd").value;
+      const type = document.getElementById("searchField").value === "vaccineTypeName" 
+                   ? document.getElementById("keyword").value.trim() 
+                   : "";
+
+      let url = `/api/vaccines/search-advanced?`;
+      if (lot) url += `lot=${encodeURIComponent(lot)}&`;
+      if (maxQty) url += `maxQuantity=${maxQty}&`;
+      if (start) url += `startDate=${start}&`;
+      if (end) url += `endDate=${end}&`;
+      if (type) url += `typeName=${encodeURIComponent(type)}&`;
+
+      try {
+        const payload = await apiRequest(url);
+        renderRows(payload, { showDaysLeft: false });
+        showMsg(`Đã lọc được ${payload.length} kết quả.`);
+      } catch (err) {
         showMsg(err.message, true);
       }
     }

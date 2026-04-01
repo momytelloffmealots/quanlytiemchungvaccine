@@ -208,10 +208,41 @@ public class VaccineDao {
         return rows.isEmpty() ? 0 : rows.get(0);
     }
 
-    public Optional<String> getVaccineTypeIdFromVaccineId(String vaccineId) {
-        String sql = "SELECT VACCINE_TYPE_ID FROM VACCINE WHERE VACCINE_ID = ?";
-        List<String> rows = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString(1), vaccineId);
-        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
+    public List<VaccineDTO> searchAdvanced(String typeName, Integer maxQuantity, String lot, LocalDate startDate, LocalDate endDate) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT
+                    v.VACCINE_ID, v.NAME, v.MANUFACTURER, v.PRODUCTION_DATE,
+                    v.EXPIRY AS EXPIRY_DATE, v.VACCINE_LOT, v.QUANTITY_AVAILABLE,
+                    v.PRICE, vt.VACCINE_TYPE_ID, vt.VACCINE_TYPE
+                FROM VACCINE v
+                JOIN VACCINE_TYPE vt ON vt.VACCINE_TYPE_ID = v.VACCINE_TYPE_ID
+                WHERE 1=1
+                """);
+        java.util.ArrayList<Object> params = new java.util.ArrayList<>();
+
+        if (typeName != null && !typeName.isEmpty()) {
+            sql.append(" AND vt.VACCINE_TYPE = ?");
+            params.add(typeName);
+        }
+        if (maxQuantity != null) {
+            sql.append(" AND v.QUANTITY_AVAILABLE < ?");
+            params.add(maxQuantity);
+        }
+        if (lot != null && !lot.isEmpty()) {
+            sql.append(" AND v.VACCINE_LOT = ?");
+            params.add(lot);
+        }
+        if (startDate != null) {
+            sql.append(" AND v.PRODUCTION_DATE >= ?");
+            params.add(Date.valueOf(startDate));
+        }
+        if (endDate != null) {
+            sql.append(" AND v.PRODUCTION_DATE <= ?");
+            params.add(Date.valueOf(endDate));
+        }
+
+        sql.append(" ORDER BY v.VACCINE_ID");
+        return jdbcTemplate.query(sql.toString(), VACCINE_ROW_MAPPER, params.toArray());
     }
 }
 

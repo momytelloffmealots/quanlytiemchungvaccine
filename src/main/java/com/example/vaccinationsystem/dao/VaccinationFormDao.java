@@ -170,6 +170,50 @@ public class VaccinationFormDao {
         return !rows.isEmpty();
     }
 
+    public List<VaccinationFormInfoDTO> searchForms(LocalDate retentionDate, Integer month) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT
+                    f.VACCINATION_FORM_ID, c.CUSTOMER_ID, c.NAME AS CUSTOMER_NAME,
+                    c.DATE_OF_BIRTH, c.GENDER, c.BIOGRAPHY, c.EMAIL, c.PHONE_NUM,
+                    d.NAME AS DOCTOR_NAME, cash.NAME AS CASHIER_NAME, f.VACCINATION_DATE
+                FROM VACCINATION_FORM f
+                JOIN CUSTOMER c ON c.CUSTOMER_ID = f.CUSTOMER_ID
+                JOIN DOCTOR d ON d.DOCTOR_ID = f.DOCTOR_ID
+                JOIN CASHIER cash ON cash.CASHIER_ID = f.CASHIER_ID
+                """);
+        
+        if (retentionDate != null) {
+            sql.append(" JOIN VACCINATION_FORM_DETAIL det ON f.VACCINATION_FORM_ID = det.VACCINATION_FORM_ID");
+        }
+        
+        sql.append(" WHERE 1=1");
+        java.util.ArrayList<Object> params = new java.util.ArrayList<>();
+
+        if (retentionDate != null) {
+            sql.append(" AND det.RETENTION = ?");
+            params.add(Date.valueOf(retentionDate));
+        }
+        if (month != null) {
+            sql.append(" AND MONTH(f.VACCINATION_DATE) = ?");
+            params.add(month);
+        }
+
+        sql.append(" ORDER BY f.VACCINATION_FORM_ID DESC");
+        
+        RowMapper<VaccinationFormInfoDTO> mapper = (rs, rowNum) -> {
+            VaccinationFormInfoDTO dto = new VaccinationFormInfoDTO();
+            dto.setVaccinationFormId(rs.getString("VACCINATION_FORM_ID"));
+            dto.setCustomerId(rs.getString("CUSTOMER_ID"));
+            dto.setCustomerName(rs.getString("CUSTOMER_NAME"));
+            dto.setDoctorName(rs.getString("DOCTOR_NAME"));
+            dto.setCashierName(rs.getString("CASHIER_NAME"));
+            dto.setVaccinationDate(toLocalDate(rs.getDate("VACCINATION_DATE")));
+            return dto;
+        };
+
+        return jdbcTemplate.query(sql.toString(), mapper, params.toArray());
+    }
+
     public void deleteForm(String formId) {
         // delete details first due to FK constraints
         jdbcTemplate.update("DELETE FROM VACCINATION_FORM_DETAIL WHERE VACCINATION_FORM_ID = ?", formId);

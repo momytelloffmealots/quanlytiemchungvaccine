@@ -51,8 +51,31 @@
               <label for="keyword">Nội dung tìm kiếm</label>
               <input id="keyword" placeholder="Nhập từ khóa để lọc..." />
             </div>
-            <div style="align-self:flex-end;">
+            <div style="align-self:flex-end; display:flex; gap:10px;">
               <button class="btn primary" onclick="renderFormsTable()">Tìm kiếm</button>
+              <button class="btn" onclick="toggleAdvancedSearch()">Bộ lọc nâng cao ▾</button>
+            </div>
+          </div>
+
+          <!-- Advanced Filter Row -->
+          <div id="advancedFilterRow" class="row" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+            <div class="field" style="min-width:140px;">
+              <label>Lọc theo tháng</label>
+              <select id="advMonth">
+                <option value="">-- Chọn tháng --</option>
+                <option value="1">Tháng 1</option><option value="2">Tháng 2</option><option value="3">Tháng 3</option>
+                <option value="4">Tháng 4</option><option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+                <option value="7">Tháng 7</option><option value="8">Tháng 8</option><option value="9">Tháng 9</option>
+                <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+              </select>
+            </div>
+            <div class="field" style="min-width:160px;">
+              <label>Ngày trả hồ sơ (Retention)</label>
+              <input id="advRetention" type="date" />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="searchFormsAdvanced()">Áp dụng lọc</button>
+              <button class="btn" onclick="loadForms()">Làm mới</button>
             </div>
           </div>
           <div style="overflow:auto;max-height:320px;margin-top:14px;">
@@ -227,6 +250,28 @@
           <td><button class="btn" type="button" onclick="checkBill('${f.vaccinationFormId}')">Check</button></td>
         `;
         body.appendChild(tr);
+      }
+    }
+
+    function toggleAdvancedSearch() {
+      const row = document.getElementById("advancedFilterRow");
+      row.style.display = row.style.display === "none" ? "flex" : "none";
+    }
+
+    async function searchFormsAdvanced() {
+      const month = document.getElementById("advMonth").value;
+      const retention = document.getElementById("advRetention").value;
+      
+      let url = `/api/vaccination-forms/search?`;
+      if (month) url += `month=${month}&`;
+      if (retention) url += `retentionDate=${retention}&`;
+
+      try {
+        allFormsData = await apiRequest(url);
+        renderFormsTable();
+        showMsg(`Đã lọc được ${allFormsData.length} phiếu tiêm.`);
+      } catch (err) {
+        showMsg("Lỗi khi lọc: " + err.message, true);
       }
     }
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaccinationsystem.dto.VaccinationFormCreateRequest;
@@ -58,6 +59,13 @@ public class VaccinationFormController {
     @DeleteMapping("/vaccination-forms/{id}")
     public void deleteForm(@PathVariable("id") String id) {
         formService.deleteForm(id);
+    }
+
+    @GetMapping("/vaccination-forms/search")
+    public List<VaccinationFormInfoDTO> searchForms(
+            @RequestParam(value = "retentionDate", required = false) java.time.LocalDate retentionDate,
+            @RequestParam(value = "month", required = false) Integer month) {
+        return formService.searchForms(retentionDate, month);
     }
 }
 

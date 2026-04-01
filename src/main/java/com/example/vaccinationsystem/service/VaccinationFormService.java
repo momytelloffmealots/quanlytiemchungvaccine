@@ -81,5 +81,9 @@ public class VaccinationFormService {
         }
         formDao.deleteForm(formId);
     }
+
+    public List<VaccinationFormInfoDTO> searchForms(java.time.LocalDate retentionDate, Integer month) {
+        return formDao.searchForms(retentionDate, month);
+    }
 }
 

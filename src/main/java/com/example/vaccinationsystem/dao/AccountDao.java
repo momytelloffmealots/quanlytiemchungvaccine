@@ -136,6 +136,61 @@ public class AccountDao {
         jdbcTemplate.update("DELETE FROM ACCOUNT WHERE ACCOUNT_ID = ?", accountId);
     }
 
+    public List<AccountInfoDTO> searchStaff(String role, String address, Integer birthYear, String certificate, String lotNumber) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT DISTINCT a.ACCOUNT_ID, a.AUTHORITY, a.USERNAME, a.EMAIL,
+                       COALESCE(d.DOCTOR_ID, c.CASHIER_ID, i.INVENTORY_MANAGER_ID, m.ADMINISTRATOR_ID) as EMP_ID,
+                       COALESCE(d.NAME, c.NAME, i.NAME, m.NAME) as EMP_NAME
+                FROM ACCOUNT a
+                LEFT JOIN DOCTOR d ON a.ACCOUNT_ID = d.ACCOUNT_ID
+                LEFT JOIN CASHIER c ON a.ACCOUNT_ID = c.ACCOUNT_ID
+                LEFT JOIN INVENTORY_MANAGER i ON a.ACCOUNT_ID = i.ACCOUNT_ID
+                LEFT JOIN ADMINISTRATOR m ON a.ACCOUNT_ID = m.ACCOUNT_ID
+                """);
+        
+        if (lotNumber != null && !lotNumber.isEmpty()) {
+            sql.append(" LEFT JOIN VACCINE v ON (i.INVENTORY_MANAGER_ID = v.INVENTORY_MANAGER_ID)");
+        }
+
+        sql.append(" WHERE 1=1");
+        java.util.ArrayList<Object> params = new java.util.ArrayList<>();
+
+        if (role != null && !role.isEmpty()) {
+            sql.append(" AND a.AUTHORITY = ?");
+            params.add(role);
+        }
+        if (address != null && !address.isEmpty()) {
+            sql.append(" AND (d.ADDRESS LIKE ? OR c.ADDRESS LIKE ?)");
+            params.add("%" + address + "%");
+            params.add("%" + address + "%");
+        }
+        if (birthYear != null) {
+            sql.append(" AND (YEAR(d.DATE_OF_BIRTH) = ? OR YEAR(c.DATE_OF_BIRTH) = ?)");
+            params.add(birthYear);
+            params.add(birthYear);
+        }
+        if (certificate != null && !certificate.isEmpty()) {
+            sql.append(" AND d.CERTIFICATE LIKE ?");
+            params.add("%" + certificate + "%");
+        }
+        if (lotNumber != null && !lotNumber.isEmpty()) {
+            sql.append(" AND v.VACCINE_LOT = ?");
+            params.add(lotNumber);
+        }
+
+        sql.append(" ORDER BY a.ACCOUNT_ID DESC");
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            AccountInfoDTO dto = new AccountInfoDTO();
+            dto.setAccountId(rs.getString("ACCOUNT_ID"));
+            dto.setAuthority(rs.getString("AUTHORITY"));
+            dto.setUsername(rs.getString("USERNAME"));
+            dto.setEmail(rs.getString("EMAIL"));
+            dto.setEmployeeId(rs.getString("EMP_ID"));
+            dto.setEmployeeName(rs.getString("EMP_NAME"));
+            return dto;
+        }, params.toArray());
+    }
+
     public static class AccountRow {
         private String accountId;
         private String authority;

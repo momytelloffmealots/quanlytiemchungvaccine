@@ -88,6 +88,33 @@
             <div class="field" style="flex:1;min-width:260px;">
               <input id="keyword" placeholder="Tra cứu username, email hoặc vai trò..." oninput="renderTable()" />
             </div>
+            <div class="field" style="min-width:140px;">
+              <button class="btn" onclick="toggleAdvancedSearch()">Bộ lọc nâng cao ▾</button>
+            </div>
+          </div>
+
+          <!-- Advanced Filter Row -->
+          <div id="advancedFilterRow" class="row" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:10px; flex-wrap: wrap; gap: 15px;">
+            <div class="field" style="min-width:140px;">
+              <label>Địa chỉ</label>
+              <input id="advAddress" placeholder="VD: Nghệ An, HCM" />
+            </div>
+            <div class="field" style="min-width:120px;">
+              <label>Năm sinh</label>
+              <input id="advBirthYear" type="number" placeholder="2001" />
+            </div>
+            <div class="field" style="min-width:140px;">
+              <label>Bằng cấp (Bác sĩ)</label>
+              <input id="advCert" placeholder="VD: Đại học" />
+            </div>
+            <div class="field" style="min-width:140px;">
+              <label>Lô vaccine nhập (Quản kho)</label>
+              <input id="advLot" placeholder="VD: 27" />
+            </div>
+            <div style="align-self:flex-end;">
+              <button class="btn primary" onclick="searchStaff()">Áp dụng lọc</button>
+              <button class="btn" onclick="fetchAccounts()">Làm mới</button>
+            </div>
           </div>
 
           <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
@@ -188,7 +215,10 @@
       body.innerHTML = "";
       
       const filtered = allAccounts.filter(a => {
-        const str = (a.username + " " + a.email + " " + a.authority).toLowerCase();
+        const username = a.username || "";
+        const email = a.email || "";
+        const role = a.authority || "";
+        const str = (username + " " + email + " " + role).toLowerCase();
         return str.includes(kw);
       });
 
@@ -208,11 +238,37 @@
           <td><span class="${badgeClass}">${roleName}</span></td>
           <td>${a.email || ""}</td>
           <td style="text-align:right;">
-             <button class="btn" style="padding:4px 8px;font-size:0.85rem;margin-right:4px;" onclick='openEditModal(${JSON.stringify(a)})'>Sửa</button>
+             <button class="btn" style="padding:4px 8px;font-size:0.85rem;margin-right:4px;" onclick="openEditModal('${a.accountId}')">Sửa</button>
              <button class="btn" style="padding:4px 8px;font-size:0.85rem;" onclick="deleteAccount('${a.accountId}')">Xóa</button>
           </td>
         `;
         body.appendChild(tr);
+      }
+    }
+
+    function toggleAdvancedSearch() {
+      const row = document.getElementById("advancedFilterRow");
+      row.style.display = row.style.display === "none" ? "flex" : "none";
+    }
+
+    async function searchStaff() {
+      const address = document.getElementById("advAddress").value.trim();
+      const birthYear = document.getElementById("advBirthYear").value;
+      const cert = document.getElementById("advCert").value.trim();
+      const lot = document.getElementById("advLot").value.trim();
+      
+      let url = `/api/accounts/search?`;
+      if (address) url += `address=${encodeURIComponent(address)}&`;
+      if (birthYear) url += `birthYear=${birthYear}&`;
+      if (cert) url += `certificate=${encodeURIComponent(cert)}&`;
+      if (lot) url += `lotNumber=${encodeURIComponent(lot)}&`;
+
+      try {
+        allAccounts = await apiRequest(url);
+        renderTable();
+        showMsg(`Đã lọc được ${allAccounts.length} nhân sự phù hợp.`);
+      } catch (err) {
+        showMsg("Lỗi khi lọc: " + err.message, true);
       }
     }
 
@@ -227,7 +283,9 @@
       document.getElementById("accountModal").style.display = "block";
     }
 
-    function openEditModal(a) {
+    function openEditModal(accountId) {
+      const a = allAccounts.find(x => x.accountId === accountId);
+      if(!a) return;
       document.getElementById("modalTitle").textContent = "Sửa Thông Tin Tài Khoản";
       document.getElementById("acctId").value = a.accountId;
       document.getElementById("acctUsername").value = a.username;
