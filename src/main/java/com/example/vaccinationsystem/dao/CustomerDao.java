@@ -34,8 +34,7 @@ public class CustomerDao {
     }
 
     public List<CustomerDTO> searchByName(String name) {
-        // Query 18: SELECT CUSTOMER.CUSTOMER_ID, CUSTOMER.NAME FROM CUSTOMER WHERE CUSTOMER.NAME LIKE N'Phạm%';
         String sql = "SELECT * FROM CUSTOMER WHERE NAME LIKE ? ORDER BY NAME";
-        return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER, name + "%");
+        return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER, "%" + name + "%");
     }
 }
