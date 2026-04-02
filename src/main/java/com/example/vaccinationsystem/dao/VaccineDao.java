@@ -33,6 +33,7 @@ public class VaccineDao {
         dto.setPrice(rs.getBigDecimal("PRICE"));
         dto.setVaccineTypeId(rs.getString("VACCINE_TYPE_ID"));
         dto.setVaccineTypeName(rs.getString("VACCINE_TYPE"));
+        dto.setDaysLeft(rs.getInt("DAYS_LEFT"));
         return dto;
     };
 
@@ -52,7 +53,8 @@ public class VaccineDao {
                     v.QUANTITY_AVAILABLE,
                     v.PRICE,
                     vt.VACCINE_TYPE_ID,
-                    vt.VACCINE_TYPE
+                    vt.VACCINE_TYPE,
+                    DATEDIFF(v.EXPIRY, CURDATE()) AS DAYS_LEFT
                 FROM VACCINE v
                 JOIN VACCINE_TYPE vt ON vt.VACCINE_TYPE_ID = v.VACCINE_TYPE_ID
                 ORDER BY v.VACCINE_ID
@@ -118,7 +120,8 @@ public class VaccineDao {
                     v.QUANTITY_AVAILABLE,
                     v.PRICE,
                     vt.VACCINE_TYPE_ID,
-                    vt.VACCINE_TYPE
+                    vt.VACCINE_TYPE,
+                    DATEDIFF(v.EXPIRY, CURDATE()) AS DAYS_LEFT
                 FROM VACCINE v
                 JOIN VACCINE_TYPE vt ON vt.VACCINE_TYPE_ID = v.VACCINE_TYPE_ID
                 WHERE v.VACCINE_ID LIKE ?
@@ -213,7 +216,8 @@ public class VaccineDao {
                 SELECT
                     v.VACCINE_ID, v.NAME, v.MANUFACTURER, v.PRODUCTION_DATE,
                     v.EXPIRY AS EXPIRY_DATE, v.VACCINE_LOT, v.QUANTITY_AVAILABLE,
-                    v.PRICE, vt.VACCINE_TYPE_ID, vt.VACCINE_TYPE
+                    v.PRICE, vt.VACCINE_TYPE_ID, vt.VACCINE_TYPE,
+                    DATEDIFF(v.EXPIRY, CURDATE()) AS DAYS_LEFT
                 FROM VACCINE v
                 JOIN VACCINE_TYPE vt ON vt.VACCINE_TYPE_ID = v.VACCINE_TYPE_ID
                 WHERE 1=1

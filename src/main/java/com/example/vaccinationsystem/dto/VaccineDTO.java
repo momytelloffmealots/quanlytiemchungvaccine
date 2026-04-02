@@ -22,6 +22,7 @@ public class VaccineDTO {
 
     private String vaccineTypeId;
     private String vaccineTypeName;
+    private Integer daysLeft;
 
     public String getVaccineId() {
         return vaccineId;
@@ -29,6 +30,14 @@ public class VaccineDTO {
 
     public void setVaccineId(String vaccineId) {
         this.vaccineId = vaccineId;
+    }
+
+    public Integer getDaysLeft() {
+        return daysLeft;
+    }
+
+    public void setDaysLeft(Integer daysLeft) {
+        this.daysLeft = daysLeft;
     }
 
     public String getName() {
