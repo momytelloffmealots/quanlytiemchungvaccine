@@ -10,26 +10,69 @@ public class CustomerDTO {
     private String phoneNum;
     private String email;
     private String address;
+    private Integer visitCount;
+    private LocalDate lastVisit;
 
     // Getters and Setters
-    public String getCustomerId() { return customerId; }
-    public void setCustomerId(String customerId) { this.customerId = customerId; }
+    public Integer getVisitCount() { return visitCount; }
+    public void setVisitCount(Integer visitCount) { this.visitCount = visitCount; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public LocalDate getLastVisit() { return lastVisit; }
+    public void setLastVisit(LocalDate lastVisit) { this.lastVisit = lastVisit; }
 
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
+    public String getCustomerId() {
+        return customerId;
+    }
 
-    public LocalDate getDateOfBirth() { return dateOfBirth; }
-    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
 
-    public String getPhoneNum() { return phoneNum; }
-    public void setPhoneNum(String phoneNum) { this.phoneNum = phoneNum; }
+    public String getName() {
+        return name;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(String phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }

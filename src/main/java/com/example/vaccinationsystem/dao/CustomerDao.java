@@ -21,20 +21,39 @@ public class CustomerDao {
         dto.setName(rs.getString("NAME"));
         dto.setGender(rs.getString("GENDER"));
         java.sql.Date dob = rs.getDate("DATE_OF_BIRTH");
-        if(dob != null) dto.setDateOfBirth(dob.toLocalDate());
+        if (dob != null)
+            dto.setDateOfBirth(dob.toLocalDate());
         dto.setPhoneNum(rs.getString("PHONE_NUM"));
         dto.setEmail(rs.getString("EMAIL"));
         dto.setAddress(rs.getString("BIOGRAPHY")); // Using biography column as address
+        dto.setVisitCount(rs.getInt("visitCount"));
+        java.sql.Date lv = rs.getDate("lastVisit");
+        if (lv != null) dto.setLastVisit(lv.toLocalDate());
         return dto;
     };
 
     public List<CustomerDTO> findAll() {
-        String sql = "SELECT * FROM CUSTOMER ORDER BY CUSTOMER_ID DESC";
+        String sql = """
+                SELECT 
+                    c.*, 
+                    (SELECT COUNT(*) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS visitCount,
+                    (SELECT MAX(VACCINATION_DATE) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS lastVisit
+                FROM CUSTOMER c
+                ORDER BY c.CUSTOMER_ID DESC
+                """;
         return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER);
     }
 
     public List<CustomerDTO> searchByName(String name) {
-        String sql = "SELECT * FROM CUSTOMER WHERE NAME LIKE ? ORDER BY NAME";
+        String sql = """
+                SELECT 
+                    c.*, 
+                    (SELECT COUNT(*) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS visitCount,
+                    (SELECT MAX(VACCINATION_DATE) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS lastVisit
+                FROM CUSTOMER c
+                WHERE c.NAME LIKE ? 
+                ORDER BY c.NAME
+                """;
         return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER, "%" + name + "%");
     }
 
