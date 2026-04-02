@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quản lý vaccine</title>
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
   <div class="container">
     <div class="topbar">
@@ -39,28 +41,19 @@
         <div class="card">
           <h2 style="margin:0 0 10px;">Danh sách vaccine</h2>
 
-          <div class="row" style="align-items: flex-end; gap: 15px;">
-            <div class="field" style="min-width:180px;">
-              <label for="searchField">Tìm theo trường</label>
-              <select id="searchField">
-                <option value="all">Tất cả thông tin</option>
-                <option value="vaccineId">Mã Vaccine (ID)</option>
-                <option value="name">Tên Vaccine</option>
-                <option value="manufacturer">Nhà sản xuất</option>
-                <option value="vaccineTypeName">Loại Vaccine</option>
-                <option value="lot">Số lô</option>
-                <option value="daysLeft">Số ngày còn lại</option>
-                <option value="quantityAvailable">Số lượng tồn</option>
-                <option value="price">Đơn giá</option>
-              </select>
+          <div class="row">
+            <div class="field" style="flex:1;min-width:260px;">
+              <label for="keyword">Tìm kiếm</label>
+              <input id="keyword" placeholder="MAVACCINE / TENVACCINE / NHASX / LOAIVACCINE ..." />
             </div>
-            <div class="field" style="flex:1; min-width:200px;">
-              <label for="keyword">Nội dung tìm kiếm</label>
-              <input id="keyword" placeholder="Nhập từ khóa hoặc con số..." onkeypress="if(event.key==='Enter') performSearch()" />
+            <div class="field">
+              <label for="days">Sắp hết hạn (ngày)</label>
+              <input id="days" type="number" min="1" value="30" />
             </div>
-            <div style="display:flex; gap:10px;">
-              <button class="btn primary" onclick="performSearch()">Tìm kiếm</button>
-              <button class="btn" onclick="loadAll()">Tải lại tất cả</button>
+            <div style="align-self:flex-end;display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn primary" onclick="loadAll()">Tải tất cả</button>
+              <button class="btn primary" onclick="searchAll()">Tìm kiếm vaccine</button>
+              <button class="btn primary" onclick="loadExpiring()">Sắp hết hạn</button>
             </div>
           </div>
 
@@ -69,18 +62,18 @@
           <div style="margin-top:14px;">
             <table>
               <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên</th>
-                <th>Nhà sản xuất</th>
-                <th>Ngày SX</th>
-                <th>Hạn SD</th>
-                <th>Lô</th>
-                <th>SL</th>
-                <th>Đơn giá</th>
-                <th>Loại</th>
-                <th>Ngày còn lại</th>
-              </tr>
+                <tr>
+                  <th>ID</th>
+                  <th>Tên</th>
+                  <th>Nhà sản xuất</th>
+                  <th>Ngày SX</th>
+                  <th>Hạn SD</th>
+                  <th>Lô</th>
+                  <th>SL</th>
+                  <th>Đơn giá</th>
+                  <th>Loại</th>
+                  <th>Ngày còn lại</th>
+                </tr>
               </thead>
               <tbody id="tBody"></tbody>
             </table>
@@ -97,26 +90,18 @@
     initPage();
     let currentMode = "all";
 
-    function showMsg(text, isError=false){
+    function showMsg(text, isError = false) {
       const msg = document.getElementById("msg");
       msg.style.display = "block";
       msg.textContent = text;
       msg.className = "msg" + (isError ? " error" : "");
     }
 
-    function renderRows(items) {
+    function renderRows(items, { showDaysLeft }) {
       const tb = document.getElementById("tBody");
       tb.innerHTML = "";
       for (const it of items) {
         const tr = document.createElement("tr");
-        
-        // Color coding for days left
-        let daysColor = "";
-        if (it.daysLeft !== null && it.daysLeft !== undefined) {
-          if (it.daysLeft < 0) daysColor = "color: #ff4d4d; font-weight: bold;"; // Expired
-          else if (it.daysLeft <= 30) daysColor = "color: #ffa500; font-weight: bold;"; // Warning
-        }
-
         tr.innerHTML = `
           <td>${it.vaccineId ?? ""}</td>
           <td>${it.name ?? ""}</td>
@@ -124,61 +109,55 @@
           <td>${it.productionDate ?? ""}</td>
           <td>${it.expiryDate ?? ""}</td>
           <td>${it.lot ?? ""}</td>
-          <td><span class="role-pill">${it.quantityAvailable ?? 0}</span></td>
-          <td>${it.price ? Number(it.price).toLocaleString() + ' đ' : ""}</td>
+          <td>${it.quantityAvailable ?? ""}</td>
+          <td>${it.price ?? ""}</td>
           <td>${it.vaccineTypeName ?? ""}</td>
-          <td style="${daysColor}">${it.daysLeft !== null ? it.daysLeft : "-"}</td>
+          <td>${showDaysLeft ? (it.daysLeft ?? "") : ""}</td>
         `;
         tb.appendChild(tr);
       }
     }
 
     async function loadAll() {
+      currentMode = "all";
       try {
         const payload = await apiRequest("/api/vaccines");
-        renderRows(payload);
-        showMsg("Đã tải tất cả vaccine.");
+        renderRows(payload, { showDaysLeft: false });
+        showMsg("Tải tất cả thành công.");
       } catch (err) {
         showMsg(err.message, true);
       }
     }
 
-    async function performSearch() {
-      const field = document.getElementById("searchField").value;
-      const keyword = document.getElementById("keyword").value.trim();
-      
+    async function searchAll() {
+      currentMode = "search";
+      const keyword = document.getElementById("keyword").value || "";
       try {
-        let results = [];
-        if (field === "all") {
-          // Global search on server
-          results = keyword 
-            ? await apiRequest(`/api/vaccines/search?keyword=${encodeURIComponent(keyword)}`)
-            : await apiRequest("/api/vaccines");
-        } else {
-          // Field specific search - fetch all and filter in JS for simplicity/flexibility
-          const all = await apiRequest("/api/vaccines");
-          results = all.filter(v => {
-            const val = v[field];
-            if (val === null || val === undefined) return false;
-            
-            // Numeric fields
-            if (typeof val === 'number' || field === 'price' || field === 'daysLeft') {
-              return String(val).includes(keyword);
-            }
-            // String fields
-            return String(val).toLowerCase().includes(keyword.toLowerCase());
-          });
-        }
-        
-        renderRows(results);
-        showMsg(`Tìm thấy ${results.length} kết quả.`);
+        const payload = await apiRequest(`/api/vaccines/search?keyword=${encodeURIComponent(keyword)}`);
+        renderRows(payload, { showDaysLeft: false });
+        showMsg("Tìm kiếm thành công.");
       } catch (err) {
-        showMsg("Lỗi tìm kiếm: " + err.message, true);
+        showMsg(err.message, true);
+      }
+    }
+
+    async function loadExpiring() {
+      currentMode = "expiring";
+      const days = parseInt(document.getElementById("days").value || "30", 10);
+      const keyword = document.getElementById("keyword").value || "";
+      try {
+        const payload = keyword.trim()
+          ? await apiRequest(`/api/vaccines/search/expiring?keyword=${encodeURIComponent(keyword)}&days=${days}`)
+          : await apiRequest(`/api/vaccines/expiring?days=${days}`);
+        renderRows(payload, { showDaysLeft: true });
+        showMsg("Tải dữ liệu sắp hết hạn thành công.");
+      } catch (err) {
+        showMsg(err.message, true);
       }
     }
 
     loadAll();
   </script>
 </body>
-</html>
 
+</html>

@@ -28,14 +28,15 @@ public class CustomerDao {
         dto.setAddress(rs.getString("BIOGRAPHY")); // Using biography column as address
         dto.setVisitCount(rs.getInt("visitCount"));
         java.sql.Date lv = rs.getDate("lastVisit");
-        if (lv != null) dto.setLastVisit(lv.toLocalDate());
+        if (lv != null)
+            dto.setLastVisit(lv.toLocalDate());
         return dto;
     };
 
     public List<CustomerDTO> findAll() {
         String sql = """
-                SELECT 
-                    c.*, 
+                SELECT
+                    c.*,
                     (SELECT COUNT(*) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS visitCount,
                     (SELECT MAX(VACCINATION_DATE) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS lastVisit
                 FROM CUSTOMER c
@@ -46,12 +47,12 @@ public class CustomerDao {
 
     public List<CustomerDTO> searchByName(String name) {
         String sql = """
-                SELECT 
-                    c.*, 
+                SELECT
+                    c.*,
                     (SELECT COUNT(*) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS visitCount,
                     (SELECT MAX(VACCINATION_DATE) FROM VACCINATION_FORM f WHERE f.CUSTOMER_ID = c.CUSTOMER_ID) AS lastVisit
                 FROM CUSTOMER c
-                WHERE c.NAME LIKE ? 
+                WHERE c.NAME LIKE ?
                 ORDER BY c.NAME
                 """;
         return jdbcTemplate.query(sql, CUSTOMER_ROW_MAPPER, "%" + name + "%");

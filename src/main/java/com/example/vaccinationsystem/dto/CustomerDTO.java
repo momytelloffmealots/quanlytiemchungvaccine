@@ -14,11 +14,21 @@ public class CustomerDTO {
     private LocalDate lastVisit;
 
     // Getters and Setters
-    public Integer getVisitCount() { return visitCount; }
-    public void setVisitCount(Integer visitCount) { this.visitCount = visitCount; }
+    public Integer getVisitCount() {
+        return visitCount;
+    }
 
-    public LocalDate getLastVisit() { return lastVisit; }
-    public void setLastVisit(LocalDate lastVisit) { this.lastVisit = lastVisit; }
+    public void setVisitCount(Integer visitCount) {
+        this.visitCount = visitCount;
+    }
+
+    public LocalDate getLastVisit() {
+        return lastVisit;
+    }
+
+    public void setLastVisit(LocalDate lastVisit) {
+        this.lastVisit = lastVisit;
+    }
 
     public String getCustomerId() {
         return customerId;
