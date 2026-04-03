@@ -45,10 +45,31 @@ public class VaccineService {
     }
 
     public String createVaccine(VaccineDTO dto) {
-        String lastId = vaccineDao.getLatestVaccineId();
-        String nextId = generateNextId(lastId, "VC");
-        vaccineDao.insertVaccine(nextId, dto);
-        return nextId;
+        // Use manual ID provided by user
+        String vaccineId = dto.getVaccineId();
+        
+        // Handle Vaccine Type (check if exists, if not create)
+        String typeId = getOrCreateTypeId(dto.getVaccineTypeName());
+        dto.setVaccineTypeId(typeId);
+        
+        vaccineDao.insertVaccine(vaccineId, dto);
+        return vaccineId;
+    }
+
+    private String getOrCreateTypeId(String typeName) {
+        if (typeName == null || typeName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vaccine type name cannot be empty");
+        }
+        
+        String nameNormalized = typeName.trim();
+        return vaccineDao.findVaccineTypeByName(nameNormalized)
+                .map(com.example.vaccinationsystem.dto.VaccineTypeDTO::getVaccineTypeId)
+                .orElseGet(() -> {
+                    String lastId = vaccineDao.getLatestVaccineTypeId();
+                    String nextId = generateNextId(lastId, "VT");
+                    vaccineDao.insertVaccineType(nextId, nameNormalized);
+                    return nextId;
+                });
     }
 
     private String generateNextId(String currentId, String prefix) {

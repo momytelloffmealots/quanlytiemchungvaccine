@@ -271,5 +271,27 @@ public class VaccineDao {
                 dto.getPrice(),
                 dto.getVaccineTypeId());
     }
+
+    public Optional<VaccineTypeDTO> findVaccineTypeByName(String name) {
+        String sql = "SELECT VACCINE_TYPE_ID, VACCINE_TYPE FROM VACCINE_TYPE WHERE VACCINE_TYPE = ?";
+        List<VaccineTypeDTO> results = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            VaccineTypeDTO dto = new VaccineTypeDTO();
+            dto.setVaccineTypeId(rs.getString("VACCINE_TYPE_ID"));
+            dto.setVaccineTypeName(rs.getString("VACCINE_TYPE"));
+            return dto;
+        }, name);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public String getLatestVaccineTypeId() {
+        String sql = "SELECT VACCINE_TYPE_ID FROM VACCINE_TYPE ORDER BY VACCINE_TYPE_ID DESC LIMIT 1";
+        List<String> results = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString(1));
+        return results.isEmpty() ? "VT000" : results.get(0);
+    }
+
+    public void insertVaccineType(String id, String name) {
+        String sql = "INSERT INTO VACCINE_TYPE (VACCINE_TYPE_ID, VACCINE_TYPE) VALUES (?, ?)";
+        jdbcTemplate.update(sql, id, name);
+    }
 }
 

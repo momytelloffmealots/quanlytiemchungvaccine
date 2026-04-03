@@ -89,9 +89,15 @@
             <h2 style="margin-top:0; border-bottom: 
             1px solid #333; padding-bottom: 15px;">Thêm Vaccine Mới</h2>
             <form onsubmit="saveVaccine(event)">
-              <div class="field" style="margin-bottom:12px;">
-                <label>Tên Vaccine</label>
-                <input id="vName" required placeholder="VD: AstraZeneca..." />
+              <div class="row" style="gap:15px; margin-bottom:12px;">
+                <div class="field" style="flex:1;">
+                  <label>Mã Vaccine</label>
+                  <input id="vId" required placeholder="VD: VC001..." />
+                </div>
+                <div class="field" style="flex:2;">
+                  <label>Tên Vaccine</label>
+                  <input id="vName" required placeholder="VD: AstraZeneca..." />
+                </div>
               </div>
               <div class="row" style="gap:15px; margin-bottom:12px;">
                 <div class="field" style="flex:1;">
@@ -100,7 +106,8 @@
                 </div>
                 <div class="field" style="flex:1;">
                   <label>Loại Vaccine</label>
-                  <select id="vType" required></select>
+                  <input id="vType" list="typeList" required placeholder="Chọn hoặc nhập loại mới..." />
+                  <datalist id="typeList"></datalist>
                 </div>
               </div>
               <div class="row" style="gap:15px; margin-bottom:12px;">
@@ -215,10 +222,10 @@
       document.getElementById("addModal").style.display = "block";
       try {
         const types = await apiRequest("/api/vaccine-types");
-        const sel = document.getElementById("vType");
-        sel.innerHTML = types.map(t => `<option value="${t.vaccineTypeId}">${t.vaccineTypeName}</option>`).join("");
+        const dl = document.getElementById("typeList");
+        dl.innerHTML = types.map(t => `<option value="${t.vaccineTypeName}">`).join("");
       } catch (err) {
-        alert("Lỗi tải loại vaccine: " + err.message);
+        console.error("Lỗi tải loại vaccine:", err);
       }
     }
 
@@ -229,9 +236,10 @@
     async function saveVaccine(e) {
       e.preventDefault();
       const payload = {
+        vaccineId: document.getElementById("vId").value.trim(),
         name: document.getElementById("vName").value.trim(),
         manufacturer: document.getElementById("vManufacturer").value.trim(),
-        vaccineTypeId: document.getElementById("vType").value,
+        vaccineTypeName: document.getElementById("vType").value.trim(),
         lot: document.getElementById("vLot").value.trim(),
         price: parseFloat(document.getElementById("vPrice").value),
         productionDate: document.getElementById("vProdDate").value,
