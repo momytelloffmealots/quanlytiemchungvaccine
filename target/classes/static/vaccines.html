@@ -236,6 +236,9 @@
     async function saveVaccine(e) {
       e.preventDefault();
       const session = getSession();
+      // Thử tìm mọi mã ID có thể có trong phiên đăng nhập
+      const staffId = session ? (session.inventoryManagerId || session.administratorId || session.employeeId || session.accountId || null) : null;
+      
       const payload = {
         vaccineId: document.getElementById("vId").value.trim(),
         name: document.getElementById("vName").value.trim(),
@@ -246,7 +249,7 @@
         productionDate: document.getElementById("vProdDate").value,
         expiryDate: document.getElementById("vExpDate").value,
         quantityAvailable: parseInt(document.getElementById("vQty").value, 10),
-        inventoryManagerId: session ? (session.employeeId || null) : null
+        inventoryManagerId: staffId
       };
 
       try {

@@ -28,10 +28,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> onOther(Exception ex) {
-        ex.printStackTrace(); // Optional: Log to console if available
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "success", false,
-                "message", "Lỗi phát sinh: " + ex.getMessage() // Expose detailed message for debugging
+                "message", "Internal server error"
         ));
     }
 }
