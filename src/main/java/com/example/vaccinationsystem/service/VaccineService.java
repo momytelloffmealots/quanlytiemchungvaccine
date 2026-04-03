@@ -60,6 +60,12 @@ public class VaccineService {
         String typeId = getOrCreateTypeId(dto.getVaccineTypeName());
         dto.setVaccineTypeId(typeId);
         
+        // Final fallback for inventoryManagerId if frontend failed to provide one
+        if (dto.getInventoryManagerId() == null || dto.getInventoryManagerId().trim().isEmpty()) {
+            String fallbackId = vaccineDao.getAnyInventoryManagerId();
+            dto.setInventoryManagerId(fallbackId);
+        }
+        
         vaccineDao.insertVaccine(vaccineId, dto);
         return vaccineId;
     }

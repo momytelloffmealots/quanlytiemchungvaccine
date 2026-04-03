@@ -294,5 +294,11 @@ public class VaccineDao {
         String sql = "INSERT INTO VACCINE_TYPE (VACCINE_TYPE_ID, VACCINE_TYPE) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, name);
     }
+
+    public String getAnyInventoryManagerId() {
+        String sql = "SELECT INVENTORY_MANAGER_ID FROM INVENTORY_MANAGER LIMIT 1";
+        List<String> results = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString(1));
+        return results.isEmpty() ? null : results.get(0);
+    }
 }
 
