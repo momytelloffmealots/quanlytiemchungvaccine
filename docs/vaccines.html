@@ -235,6 +235,7 @@
 
     async function saveVaccine(e) {
       e.preventDefault();
+      const session = getSession();
       const payload = {
         vaccineId: document.getElementById("vId").value.trim(),
         name: document.getElementById("vName").value.trim(),
@@ -244,7 +245,8 @@
         price: parseFloat(document.getElementById("vPrice").value),
         productionDate: document.getElementById("vProdDate").value,
         expiryDate: document.getElementById("vExpDate").value,
-        quantityAvailable: parseInt(document.getElementById("vQty").value, 10)
+        quantityAvailable: parseInt(document.getElementById("vQty").value, 10),
+        inventoryManagerId: session ? (session.employeeId || null) : null
       };
 
       try {

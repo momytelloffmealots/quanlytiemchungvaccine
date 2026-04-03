@@ -22,7 +22,16 @@ public class VaccineDTO {
 
     private String vaccineTypeId;
     private String vaccineTypeName;
+    private String inventoryManagerId;
     private Integer daysLeft;
+
+    public String getInventoryManagerId() {
+        return inventoryManagerId;
+    }
+
+    public void setInventoryManagerId(String inventoryManagerId) {
+        this.inventoryManagerId = inventoryManagerId;
+    }
 
     public String getVaccineId() {
         return vaccineId;

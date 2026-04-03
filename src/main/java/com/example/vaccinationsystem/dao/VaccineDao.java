@@ -257,8 +257,8 @@ public class VaccineDao {
 
     public void insertVaccine(String id, VaccineDTO dto) {
         String sql = """
-                INSERT INTO VACCINE (VACCINE_ID, NAME, MANUFACTURER, PRODUCTION_DATE, EXPIRY, VACCINE_LOT, QUANTITY_AVAILABLE, PRICE, VACCINE_TYPE_ID)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO VACCINE (VACCINE_ID, NAME, MANUFACTURER, PRODUCTION_DATE, EXPIRY, VACCINE_LOT, QUANTITY_AVAILABLE, PRICE, VACCINE_TYPE_ID, INVENTORY_MANAGER_ID)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         jdbcTemplate.update(sql,
                 id,
@@ -269,7 +269,8 @@ public class VaccineDao {
                 dto.getLot(),
                 dto.getQuantityAvailable(),
                 dto.getPrice(),
-                dto.getVaccineTypeId());
+                dto.getVaccineTypeId(),
+                dto.getInventoryManagerId());
     }
 
     public Optional<VaccineTypeDTO> findVaccineTypeByName(String name) {
