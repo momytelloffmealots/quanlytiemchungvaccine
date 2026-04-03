@@ -54,6 +54,7 @@
               <button class="btn primary" onclick="loadAll()">Tải tất cả</button>
               <button class="btn primary" onclick="searchAll()">Tìm kiếm vaccine</button>
               <button class="btn primary" onclick="loadExpiring()">Sắp hết hạn</button>
+              <button class="btn primary" style="background:#22c55e;" onclick="openAddModal()">+ Thêm Vaccine</button>
             </div>
           </div>
 
@@ -78,6 +79,60 @@
               <tbody id="tBody"></tbody>
             </table>
             <div class="hint" style="margin-top:10px;">Cột “Ngày còn lại” chỉ hiện khi tải dữ liệu sắp hết hạn.</div>
+          </div>
+        </div>
+        </div>
+
+        <!-- Add Vaccine Modal -->
+        <div id="addModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);">
+          <div class="modal-content" style="background:#1a2235; margin:5% auto; padding:24px; border:1px solid var(--accent); width:90%; max-width:600px; border-radius:12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            <h2 style="margin-top:0; border-bottom: 
+            1px solid #333; padding-bottom: 15px;">Thêm Vaccine Mới</h2>
+            <form onsubmit="saveVaccine(event)">
+              <div class="field" style="margin-bottom:12px;">
+                <label>Tên Vaccine</label>
+                <input id="vName" required placeholder="VD: AstraZeneca..." />
+              </div>
+              <div class="row" style="gap:15px; margin-bottom:12px;">
+                <div class="field" style="flex:1;">
+                  <label>Nhà sản xuất</label>
+                  <input id="vManufacturer" required />
+                </div>
+                <div class="field" style="flex:1;">
+                  <label>Loại Vaccine</label>
+                  <select id="vType" required></select>
+                </div>
+              </div>
+              <div class="row" style="gap:15px; margin-bottom:12px;">
+                <div class="field" style="flex:1;">
+                  <label>Số lô</label>
+                  <input id="vLot" required />
+                </div>
+                <div class="field" style="flex:1;">
+                  <label>Đơn giá (VNĐ)</label>
+                  <input id="vPrice" type="number" step="0.01" required />
+                </div>
+              </div>
+              <div class="row" style="gap:15px; margin-bottom:15px;">
+                <div class="field" style="flex:1;">
+                  <label>Ngày sản xuất</label>
+                  <input type="date" id="vProdDate" required />
+                </div>
+                <div class="field" style="flex:1;">
+                  <label>Ngày hết hạn</label>
+                  <input type="date" id="vExpDate" required />
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:20px;">
+                <label>Số lượng có sẵn</label>
+                <input type="number" id="vQty" required value="100" />
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:12px; border-top: 1px solid #333; padding-top: 20px;">
+                <button type="button" class="btn" onclick="closeAddModal()">Hủy bỏ</button>
+                <button type="submit" class="btn primary">Lưu Vaccine</button>
+              </div>
+            </form>
           </div>
         </div>
       </main>
@@ -153,6 +208,44 @@
         showMsg("Tải dữ liệu sắp hết hạn thành công.");
       } catch (err) {
         showMsg(err.message, true);
+      }
+    }
+
+    async function openAddModal() {
+      document.getElementById("addModal").style.display = "block";
+      try {
+        const types = await apiRequest("/api/vaccine-types");
+        const sel = document.getElementById("vType");
+        sel.innerHTML = types.map(t => `<option value="${t.vaccineTypeId}">${t.vaccineTypeName}</option>`).join("");
+      } catch (err) {
+        alert("Lỗi tải loại vaccine: " + err.message);
+      }
+    }
+
+    function closeAddModal() {
+      document.getElementById("addModal").style.display = "none";
+    }
+
+    async function saveVaccine(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById("vName").value.trim(),
+        manufacturer: document.getElementById("vManufacturer").value.trim(),
+        vaccineTypeId: document.getElementById("vType").value,
+        lot: document.getElementById("vLot").value.trim(),
+        price: parseFloat(document.getElementById("vPrice").value),
+        productionDate: document.getElementById("vProdDate").value,
+        expiryDate: document.getElementById("vExpDate").value,
+        quantityAvailable: parseInt(document.getElementById("vQty").value, 10)
+      };
+
+      try {
+        await apiRequest("/api/vaccines", { method: "POST", body: payload });
+        showMsg("Thêm vaccine mới thành công.");
+        closeAddModal();
+        loadAll();
+      } catch (err) {
+        showMsg("Lỗi: " + err.message, true);
       }
     }
 

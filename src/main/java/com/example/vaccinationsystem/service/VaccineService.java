@@ -43,5 +43,26 @@ public class VaccineService {
     public List<VaccineDTO> searchAdvanced(String type, Integer maxQty, String lot, LocalDate start, LocalDate end) {
         return vaccineDao.searchAdvanced(type, maxQty, lot, start, end);
     }
+
+    public String createVaccine(VaccineDTO dto) {
+        String lastId = vaccineDao.getLatestVaccineId();
+        String nextId = generateNextId(lastId, "VC");
+        vaccineDao.insertVaccine(nextId, dto);
+        return nextId;
+    }
+
+    private String generateNextId(String currentId, String prefix) {
+        StringBuilder numStr = new StringBuilder();
+        for (int i = currentId.length() - 1; i >= 0; i--) {
+            char c = currentId.charAt(i);
+            if (Character.isDigit(c)) numStr.insert(0, c);
+            else break;
+        }
+        int nextNum = 1;
+        if (numStr.length() > 0) {
+            nextNum = Integer.parseInt(numStr.toString()) + 1;
+        }
+        return String.format("%s%03d", prefix, nextNum);
+    }
 }
 

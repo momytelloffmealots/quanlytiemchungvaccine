@@ -248,5 +248,28 @@ public class VaccineDao {
         sql.append(" ORDER BY v.VACCINE_ID");
         return jdbcTemplate.query(sql.toString(), VACCINE_ROW_MAPPER, params.toArray());
     }
+
+    public String getLatestVaccineId() {
+        String sql = "SELECT VACCINE_ID FROM VACCINE ORDER BY VACCINE_ID DESC LIMIT 1";
+        List<String> results = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString(1));
+        return results.isEmpty() ? "VC000" : results.get(0);
+    }
+
+    public void insertVaccine(String id, VaccineDTO dto) {
+        String sql = """
+                INSERT INTO VACCINE (VACCINE_ID, NAME, MANUFACTURER, PRODUCTION_DATE, EXPIRY, VACCINE_LOT, QUANTITY_AVAILABLE, PRICE, VACCINE_TYPE_ID)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        jdbcTemplate.update(sql,
+                id,
+                dto.getName(),
+                dto.getManufacturer(),
+                dto.getProductionDate() != null ? Date.valueOf(dto.getProductionDate()) : null,
+                dto.getExpiryDate() != null ? Date.valueOf(dto.getExpiryDate()) : null,
+                dto.getLot(),
+                dto.getQuantityAvailable(),
+                dto.getPrice(),
+                dto.getVaccineTypeId());
+    }
 }
 
