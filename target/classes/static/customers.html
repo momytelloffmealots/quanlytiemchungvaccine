@@ -48,9 +48,11 @@
               <label for="searchField">Trường tìm kiếm</label>
               <select id="searchField">
                 <option value="all">Tất cả</option>
+                <option value="customerId">Mã Khách Hàng</option>
                 <option value="name">Tên Khách Hàng</option>
+                <option value="phoneNum">Số Điện Thoại</option>
+                <option value="email">Email</option>
                 <option value="gender">Giới Tính</option>
-                <option value="birthDate">Ngày Sinh</option>
               </select>
             </div>
             <div class="field" style="flex:1;min-width:260px;">
@@ -68,9 +70,13 @@
             <table>
               <thead>
                 <tr>
-                  <th>Tên Khách Hàng</th>
+                  <th>Mã KH</th>
+                  <th>Họ Tên</th>
                   <th>Giới Tính</th>
                   <th>Ngày Sinh</th>
+                  <th>Số Điện Thoại</th>
+                  <th>Email</th>
+                  <th>Tiểu sử</th>
                   <th>Số Lần Tiêm</th>
                   <th>Lần Tiêm Gần Nhất</th>
                   <th>Lịch Sử</th>
@@ -117,7 +123,7 @@
             <input type="email" id="cEmail" />
           </div>
           <div class="field" style="margin-bottom:20px;">
-            <label>Địa Chỉ / Tiểu Sử</label>
+            <label>Tiểu sử</label>
             <input id="cAddress" />
           </div>
           <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -205,9 +211,15 @@
         // might need a separate join or just leave as '-' for now.
         const tr = document.createElement("tr");
         tr.innerHTML = `
+          <td>${c.customerId || ""}</td>
           <td style="font-weight:600;">${c.name}</td>
           <td>${c.gender || "-"}</td>
           <td>${c.dateOfBirth || "-"}</td>
+          <td>${c.phoneNum || "-"}</td>
+          <td>${c.email || "-"}</td>
+          <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${c.address || ""}">
+            ${c.address || "-"}
+          </td>
           <td><span class="role-pill">${c.visitCount || 0}</span></td>
           <td>${c.lastVisit || "-"}</td>
           <td>

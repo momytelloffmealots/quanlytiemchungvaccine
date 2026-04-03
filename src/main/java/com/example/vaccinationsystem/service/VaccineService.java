@@ -46,7 +46,15 @@ public class VaccineService {
 
     public String createVaccine(VaccineDTO dto) {
         // Use manual ID provided by user
-        String vaccineId = dto.getVaccineId();
+        String vaccineId = dto.getVaccineId() != null ? dto.getVaccineId().trim() : "";
+        if (vaccineId.isEmpty()) {
+            throw new IllegalArgumentException("Mã vaccine không được để trống");
+        }
+        
+        // Check if ID already exists
+        if (vaccineDao.getVaccineName(vaccineId).isPresent()) {
+            throw new IllegalArgumentException("Mã vaccine '" + vaccineId + "' đã tồn tại trong hệ thống");
+        }
         
         // Handle Vaccine Type (check if exists, if not create)
         String typeId = getOrCreateTypeId(dto.getVaccineTypeName());
@@ -58,15 +66,20 @@ public class VaccineService {
 
     private String getOrCreateTypeId(String typeName) {
         if (typeName == null || typeName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Vaccine type name cannot be empty");
+            throw new IllegalArgumentException("Loại vaccine không được để trống");
         }
         
         String nameNormalized = typeName.trim();
+        // Check for existing type by name
         return vaccineDao.findVaccineTypeByName(nameNormalized)
                 .map(com.example.vaccinationsystem.dto.VaccineTypeDTO::getVaccineTypeId)
                 .orElseGet(() -> {
+                    // If not found, generate a new ID and insert
                     String lastId = vaccineDao.getLatestVaccineTypeId();
                     String nextId = generateNextId(lastId, "VT");
+                    
+                    // Safety check: ensure this nextId is not somehow already in use 
+                    // (prevents 500 if IDs in DB were manually messed up)
                     vaccineDao.insertVaccineType(nextId, nameNormalized);
                     return nextId;
                 });
