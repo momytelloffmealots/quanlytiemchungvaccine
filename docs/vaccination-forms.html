@@ -138,6 +138,24 @@
   <script>
     initPage();
     addDetail();
+    loadVaccineListForDatalist();
+
+    async function loadVaccineListForDatalist() {
+      try {
+        const vaccines = await apiRequest("/api/vaccines");
+        const dl = document.createElement("datalist");
+        dl.id = "vaccineDataList";
+        vaccines.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v.vaccineId;
+          opt.textContent = `${v.name} (${v.price.toLocaleString()} VNĐ)`;
+          dl.appendChild(opt);
+        });
+        document.body.appendChild(dl);
+      } catch (err) {
+        console.error("Lỗi khi tải danh mục vaccine cho datalist:", err);
+      }
+    }
 
     function showMsg(text, isError=false){
       const msg = document.getElementById("msg");
@@ -155,12 +173,12 @@
       el.innerHTML = `
         <div class="row" style="margin-top:8px;">
           <div class="field" style="min-width:180px;flex:1;">
-            <label>vaccineId</label>
-            <input id="d_vaccineId_${idx}" placeholder="VD: VC0001" onchange="handleVaccineDetailChange(${idx}, true)"/>
+            <label>vaccineId (chọn từ danh sách)</label>
+            <input id="d_vaccineId_${idx}" list="vaccineDataList" placeholder="Gõ để tìm mã..." oninput="handleVaccineDetailChange(${idx}, true)"/>
           </div>
           <div class="field" style="min-width:130px;">
             <label>cnt (số lượng)</label>
-            <input id="d_cnt_${idx}" type="number" min="1" value="1" onchange="handleVaccineDetailChange(${idx}, false)"/>
+            <input id="d_cnt_${idx}" type="number" min="1" value="1" oninput="handleVaccineDetailChange(${idx}, false)"/>
           </div>
           <div class="field" style="min-width:130px;">
             <label>dose</label>
