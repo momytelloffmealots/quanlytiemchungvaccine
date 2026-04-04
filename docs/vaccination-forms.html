@@ -173,19 +173,17 @@
       el.innerHTML = `
         <div class="row" style="margin-top:8px;">
           <div class="field" style="min-width:180px;flex:1;">
-            <label>vaccineId (chọn từ danh sách)</label>
-            <div style="display:flex;gap:4px;">
-              <input id="d_vaccineId_${idx}" list="vaccineDataList" placeholder="Gõ để tìm mã..." 
-                     oninput="handleVaccineDetailChange(${idx}, true)"
-                     onblur="handleVaccineDetailChange(${idx}, true)"/>
-              <button class="btn" type="button" style="padding:4px 8px;font-size:11px;" onclick="handleVaccineDetailChange(${idx}, true)">Check</button>
-            </div>
+            <label>vaccineId</label>
+            <input id="d_vaccineId_${idx}" list="vaccineDataList" placeholder="Gõ mã (VD: VC0001)..." 
+                   oninput="handleVaccineDetailChange(${idx}, true)"/>
           </div>
           <div class="field" style="min-width:130px;">
             <label>cnt (số lượng)</label>
             <input id="d_cnt_${idx}" type="number" min="1" value="1" 
-                   oninput="handleVaccineDetailChange(${idx}, false)"
-                   onblur="handleVaccineDetailChange(${idx}, false)"/>
+                   oninput="handleVaccineDetailChange(${idx}, false)"/>
+          </div>
+          <div style="align-self:flex-end; padding-bottom: 2px;">
+            <button class="btn secondary" type="button" style="background:#3b82f6;color:white;" onclick="handleVaccineDetailChange(${idx}, true)">Tính giá</button>
           </div>
           <div class="field" style="min-width:130px;">
             <label>dose</label>
