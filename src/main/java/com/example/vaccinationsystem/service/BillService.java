@@ -36,9 +36,7 @@ public class BillService {
 
         BigDecimal total = req.getTotalAmount();
         if (total == null) {
-            var sum = billDao.computeTotalAmountFromDetails(req.getVaccinationFormId());
-            total = sum.getTotalAmount();
-            if (total == null) total = BigDecimal.ZERO;
+            total = billDao.computeTotalAmountFromDetails(req.getVaccinationFormId());
             req.setTotalAmount(total);
         }
 
@@ -48,6 +46,10 @@ public class BillService {
 
     public List<BillInfoDTO> getAllBillInfo() {
         return billDao.findAllBillInfo();
+    }
+
+    public BigDecimal getOriginalTotal(String formId) {
+        return billDao.computeTotalAmountFromDetails(formId);
     }
 }
 

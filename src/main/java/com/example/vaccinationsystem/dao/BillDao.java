@@ -34,22 +34,10 @@ public class BillDao {
         return !rows.isEmpty();
     }
 
-    public BigDecimalSum computeTotalAmountFromDetails(String formId) {
-        // Placeholder: assume each detail PRICE is line price per CNT.
-        String sql = "SELECT SUM(CNT * PRICE) AS TOTAL_AMOUNT FROM VACCINATION_FORM_DETAIL WHERE VACCINATION_FORM_ID = ?";
-        return jdbcTemplate.query(sql, rs -> {
-            BigDecimalSum out = new BigDecimalSum();
-            out.totalAmount = rs.getBigDecimal(1);
-            return out;
-        }, formId);
-    }
-
-    public static class BigDecimalSum {
-        private java.math.BigDecimal totalAmount;
-
-        public java.math.BigDecimal getTotalAmount() {
-            return totalAmount;
-        }
+    public java.math.BigDecimal computeTotalAmountFromDetails(String formId) {
+        String sql = "SELECT SUM(PRICE) FROM VACCINATION_FORM_DETAIL WHERE VACCINATION_FORM_ID = ?";
+        java.math.BigDecimal sum = jdbcTemplate.queryForObject(sql, java.math.BigDecimal.class, formId);
+        return sum != null ? sum : java.math.BigDecimal.ZERO;
     }
 
     public void insertBill(String billId, BillCreateRequest req) {

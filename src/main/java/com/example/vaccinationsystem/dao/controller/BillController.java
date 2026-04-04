@@ -31,6 +31,11 @@ public class BillController {
         return billService.getAllBillInfo();
     }
 
+    @GetMapping("/vaccination-forms/{id}/total-price")
+    public java.math.BigDecimal getOriginalTotal(@org.springframework.web.bind.annotation.PathVariable("id") String id) {
+        return billService.getOriginalTotal(id);
+    }
+
     @PostMapping(value = "/bills", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String createBill(@Valid @RequestBody BillCreateRequest req) {
         return billService.createBill(req);

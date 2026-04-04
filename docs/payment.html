@@ -88,19 +88,19 @@
               <input id="billId" placeholder="HD001 (để trống nếu backend tự sinh)"/>
             </div>
             <div class="field" style="min-width:220px;flex:1;">
-              <label for="formId">Vaccination form ID</label>
-              <input id="formId" placeholder="PT001"/>
+              <label for="formId">Vaccination form ID (nhập để lấy giá)</label>
+              <input id="formId" placeholder="PT001" oninput="handlePaymentPriceCalc(true)"/>
             </div>
             <div class="field" style="min-width:220px;flex:1;">
-              <label for="cashierId">Cashier ID</label>
+              <label for="billCashierId">Cashier ID</label>
               <input id="billCashierId" placeholder="TN001"/>
             </div>
           </div>
 
           <div class="row">
             <div class="field" style="min-width:220px;flex:1;">
-              <label for="discount">Discount (0..)</label>
-              <input id="discount" type="number" step="0.01" min="0" value="0"/>
+              <label for="discount">Discount (VD: 0.1 cho 10%)</label>
+              <input id="discount" type="number" step="0.01" min="0" value="0" oninput="handlePaymentPriceCalc(false)"/>
             </div>
             <div class="field" style="min-width:220px;flex:1;">
               <label for="dueDate">Due date</label>
@@ -127,6 +127,36 @@
   <script src="assets/js/app.js"></script>
   <script>
     initPage();
+    // Tự động điền cashierId từ session
+    const session = getSession();
+    if (session && session.employeeId) {
+      document.getElementById("billCashierId").value = session.employeeId;
+    }
+
+    let originalTotal = 0;
+
+    async function handlePaymentPriceCalc(isFormIdChange) {
+      const formId = document.getElementById("formId").value.trim();
+      const discount = parseFloat(document.getElementById("discount").value || "0");
+      const totalInput = document.getElementById("totalAmount");
+
+      if (!formId) return;
+
+      try {
+        if (isFormIdChange) {
+          console.log(`[Diagnostic] Bắt đầu lấy tổng tiền cho phiếu: ${formId}...`);
+          originalTotal = await apiRequest(`/api/vaccination-forms/${encodeURIComponent(formId)}/total-price`);
+          console.log(`[Diagnostic] Tổng tiền gốc:`, originalTotal);
+        }
+
+        // Tính toán: Tổng = Giá gốc * (1 - Chiết khấu)
+        const finalTotal = originalTotal * (1 - discount);
+        totalInput.value = finalTotal.toFixed(2);
+      } catch (err) {
+        console.error("Lỗi khi tính tiền hóa đơn:", err);
+        totalInput.value = 0;
+      }
+    }
 
     function showMsg(text, isError=false){
       const msg = document.getElementById("msg");
