@@ -174,11 +174,18 @@
         <div class="row" style="margin-top:8px;">
           <div class="field" style="min-width:180px;flex:1;">
             <label>vaccineId (chọn từ danh sách)</label>
-            <input id="d_vaccineId_${idx}" list="vaccineDataList" placeholder="Gõ để tìm mã..." oninput="handleVaccineDetailChange(${idx}, true)"/>
+            <div style="display:flex;gap:4px;">
+              <input id="d_vaccineId_${idx}" list="vaccineDataList" placeholder="Gõ để tìm mã..." 
+                     oninput="handleVaccineDetailChange(${idx}, true)"
+                     onblur="handleVaccineDetailChange(${idx}, true)"/>
+              <button class="btn" type="button" style="padding:4px 8px;font-size:11px;" onclick="handleVaccineDetailChange(${idx}, true)">Check</button>
+            </div>
           </div>
           <div class="field" style="min-width:130px;">
             <label>cnt (số lượng)</label>
-            <input id="d_cnt_${idx}" type="number" min="1" value="1" oninput="handleVaccineDetailChange(${idx}, false)"/>
+            <input id="d_cnt_${idx}" type="number" min="1" value="1" 
+                   oninput="handleVaccineDetailChange(${idx}, false)"
+                   onblur="handleVaccineDetailChange(${idx}, false)"/>
           </div>
           <div class="field" style="min-width:130px;">
             <label>dose</label>
@@ -214,8 +221,10 @@
 
       try {
         let unitPrice = 0;
-        if (isIdChange || !unitPriceCache[vId]) {
+        if (isIdChange || unitPriceCache[vId] === undefined) {
+          console.log(`[Diagnostic] Đang lấy giá cho vaccine: ${vId}...`);
           unitPrice = await apiRequest(`/api/vaccines/${encodeURIComponent(vId)}/price`);
+          console.log(`[Diagnostic] Kết quả đơn giá cho ${vId}:`, unitPrice);
           unitPriceCache[vId] = unitPrice;
         } else {
           unitPrice = unitPriceCache[vId];
@@ -224,10 +233,14 @@
         // Tự động tính thành tiền: Đơn giá x Số lượng
         const totalPrice = unitPrice * cnt;
         priceInput.value = totalPrice.toFixed(2);
+        vIdInput.style.borderColor = ""; 
       } catch (err) {
-        console.error("Lỗi khi lấy giá vaccine:", err);
-        // Nếu lỗi (mã ko tồn tại), reset giá về 0
+        console.error("[Diagnostic] Lỗi khi lấy giá vaccine:", err);
+        // Nếu lỗi (mã ko tồn tại), reset giá về 0 và highlight đỏ
         priceInput.value = 0;
+        if (isIdChange) vIdInput.style.borderColor = "#ef4444";
+      }
+    }
       }
     }
 

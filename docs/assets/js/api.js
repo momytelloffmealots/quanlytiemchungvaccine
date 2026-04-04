@@ -1,13 +1,14 @@
 const API_BASE_URL_OVERRIDE = "https://quanlytiemchungvaccine-production-f8af.up.railway.app";
-//https://gigglier-colten-answerlessly.ngrok-free.dev
 const API_BASE_URL = (() => {
-  if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
-    return String(API_BASE_URL_OVERRIDE).replace(/\/$/, "");
-  }
   try {
     const host = typeof location !== "undefined" ? location.hostname : "";
-    if (host.endsWith("github.io")) {
-      return "http://localhost:8080";
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";
+    
+    // Nếu là local, bỏ qua override và trỏ về 8080 để test các thay đổi mới
+    if (isLocal) return "http://localhost:8080";
+
+    if (API_BASE_URL_OVERRIDE != null && String(API_BASE_URL_OVERRIDE).trim() !== "") {
+      return String(API_BASE_URL_OVERRIDE).replace(/\/$/, "");
     }
     return "";
   } catch {
