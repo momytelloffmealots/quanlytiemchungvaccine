@@ -36,7 +36,10 @@
 
       <main class="content">
         <div class="card">
-          <h2 style="margin:0 0 10px;">Danh sách phiếu tiêm</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0 0 10px;">Danh sách phiếu tiêm</h2>
+            <span style="font-size:10px; color:rgba(255,255,255,0.3);">Build: 2026.04.04-FixPrice</span>
+          </div>
           <div class="row">
             <div class="field" style="min-width:140px;">
               <label for="searchField">Trường tìm kiếm</label>
@@ -237,8 +240,6 @@
         // Nếu lỗi (mã ko tồn tại), reset giá về 0 và highlight đỏ
         priceInput.value = 0;
         if (isIdChange) vIdInput.style.borderColor = "#ef4444";
-      }
-    }
       }
     }
 
