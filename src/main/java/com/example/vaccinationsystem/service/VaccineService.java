@@ -44,6 +44,10 @@ public class VaccineService {
         return vaccineDao.searchAdvanced(type, maxQty, lot, start, end);
     }
 
+    public java.math.BigDecimal getVaccinePrice(String vaccineId) {
+        return vaccineDao.getVaccinePrice(vaccineId).orElse(java.math.BigDecimal.ZERO);
+    }
+
     public String createVaccine(VaccineDTO dto) {
         // Use manual ID provided by user
         String vaccineId = dto.getVaccineId() != null ? dto.getVaccineId().trim() : "";

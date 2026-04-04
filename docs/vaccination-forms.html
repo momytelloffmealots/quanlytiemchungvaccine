@@ -150,16 +150,17 @@
       const idx = document.querySelectorAll(".detailRow").length;
       const el = document.createElement("div");
       el.className = "detailRow";
+      el.dataset.idx = idx;
       el.style.marginTop = "10px";
       el.innerHTML = `
         <div class="row" style="margin-top:8px;">
           <div class="field" style="min-width:180px;flex:1;">
             <label>vaccineId</label>
-            <input id="d_vaccineId_${idx}" placeholder="VD: VC0001"/>
+            <input id="d_vaccineId_${idx}" placeholder="VD: VC0001" onchange="handleVaccineDetailChange(${idx}, true)"/>
           </div>
           <div class="field" style="min-width:130px;">
-            <label>cnt</label>
-            <input id="d_cnt_${idx}" type="number" min="1" value="1"/>
+            <label>cnt (số lượng)</label>
+            <input id="d_cnt_${idx}" type="number" min="1" value="1" onchange="handleVaccineDetailChange(${idx}, false)"/>
           </div>
           <div class="field" style="min-width:130px;">
             <label>dose</label>
@@ -170,7 +171,7 @@
             <input id="d_retention_${idx}" type="date"/>
           </div>
           <div class="field" style="min-width:160px;">
-            <label>price</label>
+            <label>price (thành tiền)</label>
             <input id="d_price_${idx}" type="number" step="0.01" min="0" value="0"/>
           </div>
           <div style="align-self:flex-end;">
@@ -179,6 +180,37 @@
         </div>
       `;
       document.getElementById("detailsList").appendChild(el);
+    }
+
+    const unitPriceCache = {};
+
+    async function handleVaccineDetailChange(idx, isIdChange) {
+      const vIdInput = document.getElementById(`d_vaccineId_${idx}`);
+      const cntInput = document.getElementById(`d_cnt_${idx}`);
+      const priceInput = document.getElementById(`d_price_${idx}`);
+      
+      const vId = vIdInput.value.trim();
+      const cnt = parseInt(cntInput.value || "1", 10);
+
+      if (!vId) return;
+
+      try {
+        let unitPrice = 0;
+        if (isIdChange || !unitPriceCache[vId]) {
+          unitPrice = await apiRequest(`/api/vaccines/${encodeURIComponent(vId)}/price`);
+          unitPriceCache[vId] = unitPrice;
+        } else {
+          unitPrice = unitPriceCache[vId];
+        }
+
+        // Tự động tính thành tiền: Đơn giá x Số lượng
+        const totalPrice = unitPrice * cnt;
+        priceInput.value = totalPrice.toFixed(2);
+      } catch (err) {
+        console.error("Lỗi khi lấy giá vaccine:", err);
+        // Nếu lỗi (mã ko tồn tại), reset giá về 0
+        priceInput.value = 0;
+      }
     }
 
     function removeDetail(btn){

@@ -60,6 +60,11 @@ public class VaccineController {
         return vaccineService.searchAdvanced(typeName, maxQuantity, lot, startDate, endDate);
     }
 
+    @GetMapping("/vaccines/{id}/price")
+    public java.math.BigDecimal getVaccinePrice(@org.springframework.web.bind.annotation.PathVariable("id") String id) {
+        return vaccineService.getVaccinePrice(id);
+    }
+
     @PostMapping("/vaccines")
     public String createVaccine(@RequestBody VaccineDTO dto) {
         return vaccineService.createVaccine(dto);
